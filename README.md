@@ -1,14 +1,13 @@
-# Project
+# Overview
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+This repo hosts various tools for [Spring Cloud Azure](https://github.com/Azure/azure-sdk-for-java/tree/main/sdk/spring) development.
 
-As the maintainer of this project, please make a few updates:
+## Sonar Analysis
 
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+This repo contains a [github actions](.github/workflows/sonar-spring-cloud-azure.yml) which runs daily to build the **main** branch of [Spring Cloud Azure](https://github.com/Azure/azure-sdk-for-java/tree/main/sdk/spring) and submit it to [Sonar Cloud](https://sonarcloud.io/project/overview?id=stliu_azure-sdk-for-java) for analysis.
+
+
+
 
 ## Contributing
 
