@@ -40,5 +40,5 @@ jobs:
           JAVA_OPTS: "-Xmx3062m -XX:MaxPermSize=512m -XX:ReservedCodeCacheSize=128m"
           SONAR_SCANNER_OPTS: "-Xmx3062m -XX:MaxPermSize=512m -XX:ReservedCodeCacheSize=128m"
           MAVEN_OPTS: "-Xmx3062m -XX:MaxPermSize=512m -XX:ReservedCodeCacheSize=128m"
-        run: mvn -B -e -f sdk/spring/pom.xml -P dev verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.organization=stliu -Dsonar.host.url=https://sonarcloud.io -Dsonar.projectKey=stliu_azure-sdk-for-java -Dgpg.skip -Dmaven.javadoc.skip -Drevapi.skip  
+        run: mvn -B -e -f sdk/spring/pom.xml -P dev verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.organization=stliu -Dsonar.host.url=https://sonarcloud.io -Dsonar.projectKey=stliu_azure-sdk-for-java -Dsonar.exclusions=eng/** -Dgpg.skip -Dmaven.javadoc.skip -Drevapi.skip  
 
