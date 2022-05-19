@@ -60,7 +60,7 @@ public class SupportedVersionMatrixMetadataReader {
 
     public void UpdateMatrixJson(ArrayList<String> testedList) {
         LOGGER.info("start updating ");
-        try (JsonGenerator generator = mapper.getFactory().createGenerator(new File("testJson.json"),
+        try (JsonGenerator generator = mapper.getFactory().createGenerator(new File("supported-version-matrix.json"),
             JsonEncoding.UTF8)) {
             generator.writeStartObject();                      // {
             generator.writeFieldName("displayNames");           // "displayNames":
@@ -133,7 +133,7 @@ public class SupportedVersionMatrixMetadataReader {
                     }
                 }
             }
-            FileWriter fileWriter = new FileWriter("testJson2.json");
+            FileWriter fileWriter = new FileWriter("compatibility-version-management.json");
             fileWriter.write(root.toString());
             fileWriter.close();
             LOGGER.info(" update success ");
