@@ -86,11 +86,11 @@ public class SupportedVersionMatrixMetadataReader {
                 generator.writeString(str);
             }
             generator.writeEndArray();                         //    ]
-            generator.writeFieldName("SPRING_CLOUD_AZURE_TEST_SUPPORTED_SPRING_CLOUD_VERSION");          //    "SPRING_CLOUD_AZURE_TEST_SUPPORTED_SPRING_CLOUD_VERSION" :
-            generator.writeStartArray();                       //    [
-            generator.writeString("2021.0.2");
-            generator.writeString("2020.0.5");
-            generator.writeEndArray();                         //    ]
+//            generator.writeFieldName("SPRING_CLOUD_AZURE_TEST_SUPPORTED_SPRING_CLOUD_VERSION");          //    "SPRING_CLOUD_AZURE_TEST_SUPPORTED_SPRING_CLOUD_VERSION" :
+//            generator.writeStartArray();                       //    [
+//            generator.writeString("2021.0.2");
+//            generator.writeString("2020.0.5");
+//            generator.writeEndArray();                         //    ]
             generator.writeEndObject();                        // }
             generator.writeEndObject();                        // }
             LOGGER.info(" update success ");
