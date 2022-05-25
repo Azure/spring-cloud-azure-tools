@@ -7,9 +7,15 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Data
 public class DependencyProperties {
     private Metadata metadata;
+    private BomRanges bomRanges;
 
     @Data
     public static class Metadata{
+        String url;
+    }
+
+    @Data
+    public static class BomRanges{
         String url;
     }
 }
