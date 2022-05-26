@@ -21,6 +21,7 @@ jobs:
           cache: maven 
       - name: Updating version matrix
         run: |
+          mvn -N io.takari:maven:wrapper
           ./mvnw clean install -P update-matrix -DskipTests -ntp
 
 
