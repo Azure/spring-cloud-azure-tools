@@ -1,8 +1,10 @@
 package com.azure.spring.dev.tools.actions;
 
 import com.azure.spring.dev.tools.dependency.SpringBootReleaseMetadataReader;
+import com.azure.spring.dev.tools.dependency.SpringCloudAzureSupportedMetadataReader;
 import com.azure.spring.dev.tools.dependency.SpringCloudVersionRangesMetadataReader;
 import com.azure.spring.dev.tools.dependency.metadata.SpringCloudAzureSupportedSpring;
+import com.azure.spring.dev.tools.dependency.metadata.SupportStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.spring.initializr.versionresolver.DependencyManagementVersionResolver;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
@@ -11,7 +13,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,23 +22,24 @@ public class UpdateCompatibilityJsonFileRunner implements CommandLineRunner {
     private final SpringBootReleaseMetadataReader metadataReader;
     private final DependencyManagementVersionResolver versionResolver;
     private final SpringCloudVersionRangesMetadataReader versionMatrixMetadataReader;
+    private final SpringCloudAzureSupportedMetadataReader azureSupportedMetadataReader;
 
     public UpdateCompatibilityJsonFileRunner(SpringBootReleaseMetadataReader metadataReader,
                                              DependencyManagementVersionResolver versionResolver,
-                                             SpringCloudVersionRangesMetadataReader versionMatrixMetadataReader) {
+                                             SpringCloudVersionRangesMetadataReader versionMatrixMetadataReader,
+                                             SpringCloudAzureSupportedMetadataReader azureSupportedMetadataReader) {
         this.metadataReader = metadataReader;
         this.versionResolver = versionResolver;
         this.versionMatrixMetadataReader = versionMatrixMetadataReader;
+        this.azureSupportedMetadataReader = azureSupportedMetadataReader;
     }
 
     @Override
     public void run(String... args) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         List<SpringCloudAzureSupportedSpring> jsonList = new ArrayList<>();
-        Map<String, DefaultArtifactVersion> springCloudRange = new LinkedHashMap<>();
-        versionMatrixMetadataReader.getSpringCloudRange().forEach((cv, bv) -> {
-            springCloudRange.put(cv, new DefaultArtifactVersion(bv.split("<")[1]));
-        });
+        Map<String, DefaultArtifactVersion> springCloudRange = versionMatrixMetadataReader.getSpringCloudRange();
+        Map<String, SupportStatus> azureSupportStatus = azureSupportedMetadataReader.getAzureSupportStatus();
         metadataReader.getProjectReleases("spring-boot").forEach(release -> {
             SpringCloudAzureSupportedSpring springCloudAzureSupportedSpring = new SpringCloudAzureSupportedSpring();
             springCloudAzureSupportedSpring.setCurrent(release.isCurrent());
@@ -52,6 +54,11 @@ public class UpdateCompatibilityJsonFileRunner implements CommandLineRunner {
                     break;
                 }
             }
+            azureSupportStatus.forEach((bv,ss) -> {
+                if(springCloudAzureSupportedSpring.getSpringBootVersion().equals(bv)) {
+                    springCloudAzureSupportedSpring.setSupportStatus(ss);
+                }
+            });
             jsonList.add(springCloudAzureSupportedSpring);
         });
         System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonList));
