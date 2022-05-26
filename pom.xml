@@ -96,5 +96,22 @@
 			</plugin>
 		</plugins>
 	</build>
+  <profiles>
+    <profile>
+      <id>update-matrix</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>3.0.0</version>
+            <configuration>
+              <mainClass>com.azure.spring.dev.tools.SpringCloudAzureDevToolsApplication</mainClass>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
 </project>
