@@ -54,7 +54,7 @@ public class UpdateCompatibilityJsonFileRunner implements CommandLineRunner {
             }
             jsonList.add(springCloudAzureSupportedSpring);
         });
-        System.out.println(mapper.writeValueAsString(jsonList));
+        System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonList));
 
     }
 
