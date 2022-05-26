@@ -2,9 +2,11 @@ package com.azure.spring.dev.tools.dependency;
 
 import com.azure.spring.dev.tools.dependency.metadata.CompatibilityInfoMetadata;
 import lombok.Data;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Data
@@ -20,11 +22,14 @@ public class SpringCloudVersionRangesMetadataReader {
         this.properties = dependencyProperties;
     }
 
-    public  Map<String, String> getSpringCloudRange() {
+    public  Map<String, DefaultArtifactVersion> getSpringCloudRange() {
+        Map<String, DefaultArtifactVersion> springCloudRange = new LinkedHashMap<>();
         CompatibilityInfoMetadata metadata = restTemplate.getForObject(properties.getBomRanges().getUrl(),
             CompatibilityInfoMetadata.class);
-        return metadata.getBomRanges().getSpringCloudRange();
-
+        metadata.getBomRanges().getSpringCloudRange().forEach((cv, bv) -> {
+            springCloudRange.put(cv, new DefaultArtifactVersion(bv.split("<")[1]));
+        });
+        return springCloudRange;
     }
 
 
