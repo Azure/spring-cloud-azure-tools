@@ -23,25 +23,28 @@ public class UpdateSpringDependencyRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        boolean update = false;
+        if (true) {
+            metadataReader.getProjectReleases("spring-boot").forEach(release -> {
+                if (release.isSnapshot()) {
+                    LOGGER.info("{} is snapshot, skipping", release);
 
-        metadataReader.getProjectReleases("spring-boot").forEach(release -> {
-            if (release.isSnapshot()) {
-                LOGGER.info("{} is snapshot, skipping", release);
-
-            } else {
-                if (ReleaseStatus.GENERAL_AVAILABILITY == release.getReleaseStatus()) {
-                    LOGGER.info("Updating {}", release);
+                } else {
+                    if (ReleaseStatus.GENERAL_AVAILABILITY == release.getReleaseStatus()) {
+                        LOGGER.info("Updating {}", release);
 
 
-                    Map<String, String> dependencies = versionResolver.resolve("org.springframework.boot", "spring"
-                        + "-boot-dependencies", release.getVersion());
-                    dependencies.forEach((key, value) -> {
-                        LOGGER.info("{} -> {}", key, value);
-                    });
+                        Map<String, String> dependencies = versionResolver.resolve("org.springframework.boot", "spring"
+                            + "-boot-dependencies", release.getVersion());
+                        dependencies.forEach((key, value) -> {
+                            LOGGER.info("{} -> {}", key, value);
+                        });
+                    }
                 }
-            }
 
-        });
+            });
+        }
+
     }
 
 
