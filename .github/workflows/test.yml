@@ -20,11 +20,15 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
           cache: maven 
+      - run: |
+          pwd
       - name: Updating version matrix
         run: |
           mvn -N io.takari:maven:wrapper
           ./mvnw clean install -P update-matrix -DskipTests -ntp
       - run: |
+          pwd
+          cd spring-cloud-azure-tools
           if [ ! -f "updated.json" ];then
             echo "BU存在json"
             else 
