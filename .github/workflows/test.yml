@@ -28,7 +28,11 @@ jobs:
           ./mvnw clean install -P update-matrix -DskipTests -ntp
       - run: |
           pwd
-          cd spring-cloud-azure-tools
+      - run: |
+          ls -l
+      - run: |
+          whereis "updated.json"
+      - run: |
           if [ ! -f "updated.json" ];then
             echo "BU存在json"
             else 
