@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -61,8 +62,9 @@ public class UpdateCompatibilityJsonFileRunner implements CommandLineRunner {
             });
             jsonList.add(springCloudAzureSupportedSpring);
         });
-        System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonList));
-
+        FileWriter fileWriter = new FileWriter("updated.json");
+        fileWriter.write(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonList));
+        fileWriter.close();
     }
 
 
