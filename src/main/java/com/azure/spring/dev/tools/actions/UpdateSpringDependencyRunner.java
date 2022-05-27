@@ -24,7 +24,7 @@ public class UpdateSpringDependencyRunner implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         boolean update = false;
-        if (true) {
+        if (update) {
             metadataReader.getProjectReleases("spring-boot").forEach(release -> {
                 if (release.isSnapshot()) {
                     LOGGER.info("{} is snapshot, skipping", release);
