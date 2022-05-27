@@ -106,7 +106,7 @@
             <artifactId>exec-maven-plugin</artifactId>
             <version>3.0.0</version>
             <configuration>
-              <mainClass>com.azure.spring.dev.tools.SpringCloudAzureDevToolsApplication</mainClass>
+              <mainClass>com.azure.spring.dev.tools.actions.UpdateCompatibilityJsonFileRunner</mainClass>
             </configuration>
           </plugin>
         </plugins>
