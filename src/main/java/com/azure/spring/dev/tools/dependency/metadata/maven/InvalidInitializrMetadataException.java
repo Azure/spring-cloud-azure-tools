@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.azure.spring.dev.tools.dependency.metadata;
+package com.azure.spring.dev.tools.dependency.metadata.maven;
 
 /**
  * Thrown when the configuration defines invalid metadata.

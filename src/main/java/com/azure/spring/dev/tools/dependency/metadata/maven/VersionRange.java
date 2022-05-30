@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.azure.spring.dev.tools.dependency.metadata;
+package com.azure.spring.dev.tools.dependency.metadata.maven;
 
 
 import org.springframework.util.Assert;
@@ -44,7 +44,7 @@ public class VersionRange {
 
     private final boolean higherInclusive;
 
-    protected VersionRange(Version lowerVersion, boolean lowerInclusive, Version higherVersion,
+    public VersionRange(Version lowerVersion, boolean lowerInclusive, Version higherVersion,
                            boolean higherInclusive) {
         this.lowerVersion = lowerVersion;
         this.lowerInclusive = lowerInclusive;

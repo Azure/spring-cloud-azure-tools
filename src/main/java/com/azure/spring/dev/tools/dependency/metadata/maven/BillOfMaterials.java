@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.azure.spring.dev.tools.dependency.metadata;
+package com.azure.spring.dev.tools.dependency.metadata.maven;
 
 import java.util.ArrayList;
 import java.util.Arrays;
