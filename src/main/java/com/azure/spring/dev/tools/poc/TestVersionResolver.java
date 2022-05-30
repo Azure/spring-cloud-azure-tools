@@ -1,6 +1,5 @@
-package com.azure.spring.dev.tools.dependency.metadata;
+package com.azure.spring.dev.tools.poc;
 
-import io.spring.initializr.versionresolver.DependencyManagementVersionResolver;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
@@ -21,9 +20,7 @@ import org.eclipse.aether.spi.locator.ServiceLocator;
 import org.eclipse.aether.transport.file.FileTransporterFactory;
 import org.eclipse.aether.transport.http.HttpTransporterFactory;
 import org.eclipse.aether.util.repository.SimpleArtifactDescriptorPolicy;
-import org.yaml.snakeyaml.Yaml;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;

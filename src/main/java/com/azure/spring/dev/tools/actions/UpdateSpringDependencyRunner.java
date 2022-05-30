@@ -1,7 +1,7 @@
 package com.azure.spring.dev.tools.actions;
 
-import com.azure.spring.dev.tools.dependency.SpringBootReleaseMetadataReader;
-import com.azure.spring.dev.tools.dependency.metadata.ReleaseStatus;
+import com.azure.spring.dev.tools.dependency.metadata.spring.ReleaseStatus;
+import com.azure.spring.dev.tools.dependency.support.SpringProjectMetadataReader;
 import io.spring.initializr.versionresolver.DependencyManagementVersionResolver;
 import org.slf4j.Logger;
 import org.springframework.boot.CommandLineRunner;
@@ -12,10 +12,10 @@ import java.util.Map;
 @Component
 public class UpdateSpringDependencyRunner implements CommandLineRunner {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(UpdateSpringDependencyRunner.class);
-    private final SpringBootReleaseMetadataReader metadataReader;
+    private final SpringProjectMetadataReader metadataReader;
     private final DependencyManagementVersionResolver versionResolver;
 
-    public UpdateSpringDependencyRunner(SpringBootReleaseMetadataReader metadataReader,
+    public UpdateSpringDependencyRunner(SpringProjectMetadataReader metadataReader,
                                         DependencyManagementVersionResolver versionResolver) {
         this.metadataReader = metadataReader;
         this.versionResolver = versionResolver;
