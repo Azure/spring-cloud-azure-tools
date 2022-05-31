@@ -41,7 +41,6 @@ public class SpringInitializrMetadataReader {
         Objects.requireNonNull(metadata);
         return metadata.getServiceBomMap()
                        .get(projectId)
-                       .getCompatibilityMap()
                        .entrySet()
                        .stream()
                        .map(entry -> Map.entry(entry.getKey(), parseVersionRange(entry.getValue())))

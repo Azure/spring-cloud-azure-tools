@@ -18,8 +18,6 @@ import java.util.Map;
  *     }
  */
 @Data
-public class BomCompatibilityWithSpringBootMetadata {
-
-    private Map<String, String> compatibilityMap = new HashMap<>();
+public class BomCompatibilityWithSpringBootMetadata extends HashMap<String, String> {
 
 }

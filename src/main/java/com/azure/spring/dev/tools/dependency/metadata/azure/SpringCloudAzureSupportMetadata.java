@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 /**
- * https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/spring/spring-cloud-azure-supported-spring.json
+ * https://raw.githubusercontent.com/Azure/azure-sdk-for-java/main/sdk/spring/spring-cloud-azure-supported-spring.json
  *
  * [
  *   {
@@ -37,13 +37,15 @@ import lombok.Data;
 @Data
 public class SpringCloudAzureSupportMetadata {
 
-    // TODO (muyao) add descriptions
+    //SpringCloudAzure currently supports the versions of SpringBoot and SpringCloud or not
     private boolean current;
     @JsonProperty("spring-boot-version")
     private String springBootVersion;
     @JsonProperty("spring-cloud-version")
     private String springCloudVersion;
+    //The release status of SpringBoot version
     private ReleaseStatus releaseStatus;
     private boolean snapshot;
+    //The support status of SpringCloudAzure to SpringBoot
     private SupportStatus supportStatus;
 }

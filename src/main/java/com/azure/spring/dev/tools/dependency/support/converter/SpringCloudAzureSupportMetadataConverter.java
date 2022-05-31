@@ -4,6 +4,9 @@ import com.azure.spring.dev.tools.dependency.metadata.azure.SpringCloudAzureSupp
 import com.azure.spring.dev.tools.dependency.metadata.spring.ProjectRelease;
 import org.springframework.core.convert.converter.Converter;
 
+/**
+ * Converter to convert SpringCloudAzureSupportMetadata
+ */
 public class SpringCloudAzureSupportMetadataConverter implements Converter<ProjectRelease, SpringCloudAzureSupportMetadata> {
 
     public static final SpringCloudAzureSupportMetadataConverter CONVERTER = new SpringCloudAzureSupportMetadataConverter();
@@ -12,6 +15,11 @@ public class SpringCloudAzureSupportMetadataConverter implements Converter<Proje
 
     }
 
+    /**
+     * Get information and convert to SpringCloudAzureSupportMetadata
+     * @param source of Spring information
+     * @return SpringCloudAzureSupportMetadata
+     */
     @Override
     public SpringCloudAzureSupportMetadata convert(ProjectRelease source) {
         SpringCloudAzureSupportMetadata springCloudAzureSupportMetadata = new SpringCloudAzureSupportMetadata();
