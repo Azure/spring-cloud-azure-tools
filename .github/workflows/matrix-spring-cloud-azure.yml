@@ -1,46 +1,52 @@
-  name: Matrix update
-  on:
-    schedule:
-      # * is a special character in YAML so you have to quote this string
-      - cron:  '0 0 * * *'
-    workflow_dispatch:
-  jobs:
-    build:
-      name: Build
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v3
-          with:
-            repository: 'Netyyyy/spring-cloud-azure-tools'
-            fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-        - name: Set up JDK 11
-          uses: actions/setup-java@v3
-          with:
-            java-version: '11'
-            distribution: 'temurin'
-            cache: maven
-        - run: |
-            pwd
-        - name: Updating version matrix
-          run: |
-            mvn compile
-            mvn exec:java -P update-matrix
-        - run: |
-            pwd
-        - run: |
-            ls -l
-        - run: |
-            whereis "updated.json"
-        - run: |
-            if [ ! -f "updated.json" ];then
-              echo "不存在json"
-              else
-              echo "存在"
-            fi
-        - uses: actions/checkout@v3
-          with:
-            repository: 'Netyyyy/azure-sdk-for-java'
-            fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-        - run: |
-            pwd
-
+name: Matrix Update
+on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '0 0 * * *'
+  workflow_dispatch:
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'Netyyyy/spring-cloud-azure-tools'
+      - name: Updating Latest Version Matrix
+        run: |
+          mvn compile
+          mvn exec:java -P update-matrix -ntp
+      - uses: actions/checkout@v3
+        with:
+          repository: 'hui1110/azure-sdk-for-java'
+          path: 'azure-sdk-for-java'
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+          fetch-depth: 0
+      - name: Update Springboot Compatibility Version
+        id: update_springboot_compatibility_version
+        run: |
+          git config --global user.email github-actions@github.com
+          git config --global user.name github-actions
+          cd azure-sdk-for-java
+          git checkout -b matrix
+          cp -f ../updated.json sdk/spring/spring-cloud-azure-supported-spring.json
+          if [[ -n "$(git status -s)" ]] ;then
+            echo '::set-output name=updated_version::true'
+            git add sdk/spring/spring-cloud-azure-supported-spring.json
+            git commit -m "Update the supported version. This commit is created by GitHub Action: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
+            git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git"
+          else
+            echo "No file changes, no commits."
+          fi
+      - name: Create Pull Request
+        if: ${{ steps.update_springboot_compatibility_version.outputs.updated_version == 'true' }}
+        uses: vsoch/pull-request-action@master
+        env:
+          PULL_REQUEST_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          PULL_REQUEST_REPOSITORY: hui1110/azure-sdk-for-java
+          PULL_REQUEST_TITLE: "Update the supported version"
+          PULL_REQUEST_FROM_BRANCH: "${{ secrets.USER }}:matrix"
+          PULL_REQUEST_BRANCH: "main"
+          PULL_REQUEST_BODY: "Update the supported version. This PR is created by GitHub Actions: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
+          PULL_REQUEST_DRAFT: true
