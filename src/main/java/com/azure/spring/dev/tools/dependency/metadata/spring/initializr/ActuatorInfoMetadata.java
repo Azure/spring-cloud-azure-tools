@@ -139,12 +139,9 @@ import java.util.Map;
 public class ActuatorInfoMetadata {
 
     private Object git;
-
     private Object build;
-
     @JsonProperty("bom-ranges")
     private Map<String, BomCompatibilityWithSpringBootMetadata> serviceBomMap = new HashMap<>();
-
     @JsonProperty("dependency-ranges")
     private Object dependencyRanges;
 

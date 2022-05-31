@@ -36,8 +36,8 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
         this.springProjectMetadataReader = springProjectMetadataReader;
         this.azureSupportMetadataReader = azureSupportMetadataReader;
         this.objectMapper = objectMapper;
-
-        this.springCloudCompatibleSpringBootVersionRanges = springInitializrMetadataReader.getCompatibleSpringBootVersions("spring-cloud");
+        this.springCloudCompatibleSpringBootVersionRanges =
+            springInitializrMetadataReader.getCompatibleSpringBootVersions("spring-cloud");
     }
 
     @Override
@@ -50,7 +50,8 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
             .map(CONVERTER::convert)
             .filter(Objects::nonNull)
             .peek(s -> s.setSpringCloudVersion(findCompatibleSpringCloudVersion(s.getSpringBootVersion())))
-            .peek(s -> s.setSupportStatus(findSupportStatus(azureSupportStatus, s.getSpringBootVersion()).orElse(null)))
+            .peek(s -> s.setSupportStatus(
+                findSupportStatus(azureSupportStatus, s.getSpringBootVersion()).orElse(null)))
             .collect(Collectors.toList());
 
         writeToFile(result);

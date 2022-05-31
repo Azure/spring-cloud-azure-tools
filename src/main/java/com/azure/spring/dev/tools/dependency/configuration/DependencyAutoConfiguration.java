@@ -3,6 +3,7 @@ package com.azure.spring.dev.tools.dependency.configuration;
 import com.azure.spring.dev.tools.dependency.support.SpringCloudAzureSupportMetadataReader;
 import com.azure.spring.dev.tools.dependency.support.SpringInitializrMetadataReader;
 import com.azure.spring.dev.tools.dependency.support.SpringProjectMetadataReader;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.spring.initializr.versionresolver.DependencyManagementVersionResolver;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -30,8 +31,9 @@ public class DependencyAutoConfiguration {
 
     @Bean
     public SpringCloudAzureSupportMetadataReader springCloudAzureSupportedMetadataReader(RestTemplate restTemplate,
-                                                                                         DependencyProperties properties) {
-        return new SpringCloudAzureSupportMetadataReader(restTemplate, properties);
+                                                                                         DependencyProperties properties,
+                                                                                         ObjectMapper objectMapper) {
+        return new SpringCloudAzureSupportMetadataReader(restTemplate, properties, objectMapper);
     }
 
     @Bean
