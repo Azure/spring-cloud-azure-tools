@@ -30,7 +30,7 @@ jobs:
           git config --global user.name github-actions
           cd azure-sdk-for-java
           git checkout -b matrix
-          cp -f ../updated.json sdk/spring/spring-cloud-azure-supported-spring.json
+          cp -f ../spring-cloud-azure-supported-spring.json sdk/spring
           if [[ -n "$(git status -s)" ]] ;then
             echo '::set-output name=updated_version::true'
             git add sdk/spring/spring-cloud-azure-supported-spring.json
