@@ -58,7 +58,7 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
     }
 
     private void writeToFile(List<SpringCloudAzureSupportMetadata> result) throws IOException {
-        try (FileWriter fileWriter = new FileWriter("spring-cloud-azure-support.json")) {
+        try (FileWriter fileWriter = new FileWriter("spring-cloud-azure-supported-spring.json")) {
             fileWriter.write(this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(result));
         }
     }
