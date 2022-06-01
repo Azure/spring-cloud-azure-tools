@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
@@ -58,8 +59,9 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
     }
 
     private void writeToFile(List<SpringCloudAzureSupportMetadata> result) throws IOException {
-        try (FileWriter fileWriter = new FileWriter("spring-cloud-azure-supported-spring.json")) {
-            fileWriter.write(this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(result));
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("spring-cloud-azure-supported-spring.json"))) {
+            bufferedWriter.write(this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(result));
+            bufferedWriter.newLine();
         }
     }
 
