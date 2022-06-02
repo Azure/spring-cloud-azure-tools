@@ -37,6 +37,7 @@ jobs:
       - name: Push Commit
         if: ${{ steps.make_decision_based_on_git_diff.outputs.updated_version == 'true' }}
         run: |
+          cd azure-sdk-for-java
           git config --global user.email github-actions@github.com
           git config --global user.name github-actions
           git add sdk/spring/spring-cloud-azure-supported-spring.json
