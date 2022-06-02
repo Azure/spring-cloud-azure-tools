@@ -18,7 +18,7 @@ jobs:
           mvn exec:java -P update-matrix -ntp
       - uses: actions/checkout@v3
         with:
-          repository: 'hui1110/azure-sdk-for-java'
+          repository: 'Azure/azure-sdk-for-java'
           path: 'azure-sdk-for-java'
           ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -44,7 +44,7 @@ jobs:
         uses: vsoch/pull-request-action@master
         env:
           PULL_REQUEST_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-          PULL_REQUEST_REPOSITORY: hui1110/azure-sdk-for-java
+          PULL_REQUEST_REPOSITORY: Azure/azure-sdk-for-java
           PULL_REQUEST_TITLE: "Update SpringBoot compatibility version"
           PULL_REQUEST_FROM_BRANCH: "${{ secrets.USER }}:matrix"
           PULL_REQUEST_BRANCH: "main"
