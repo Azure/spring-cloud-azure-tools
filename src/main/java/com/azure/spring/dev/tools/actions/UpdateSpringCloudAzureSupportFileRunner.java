@@ -8,7 +8,9 @@ import com.azure.spring.dev.tools.dependency.support.SpringCloudAzureSupportMeta
 import com.azure.spring.dev.tools.dependency.support.SpringInitializrMetadataReader;
 import com.azure.spring.dev.tools.dependency.support.SpringProjectMetadataReader;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedWriter;
@@ -22,9 +24,10 @@ import java.util.stream.Collectors;
 
 import static com.azure.spring.dev.tools.dependency.support.converter.SpringCloudAzureSupportMetadataConverter.CONVERTER;
 
+@ConditionalOnProperty("update-spring-cloud-azure-support-file")
 @Component
 public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunner {
-
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(UpdateSpringCloudAzureSupportFileRunner.class);
     private final SpringProjectMetadataReader springProjectMetadataReader;
     private final Map<String, VersionRange> springCloudCompatibleSpringBootVersionRanges;
     private final SpringCloudAzureSupportMetadataReader azureSupportMetadataReader;
@@ -43,6 +46,7 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
 
     @Override
     public void run(String... args) throws Exception {
+        LOGGER.info("---------- starting {} ----------", UpdateSpringCloudAzureSupportFileRunner.class.getSimpleName());
         List<SpringCloudAzureSupportMetadata> azureSupportStatus = azureSupportMetadataReader.getAzureSupportStatus();
 
         List<SpringCloudAzureSupportMetadata> result = springProjectMetadataReader

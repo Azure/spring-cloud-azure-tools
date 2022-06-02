@@ -98,7 +98,7 @@
 	</build>
   <profiles>
     <profile>
-      <id>update-matrix</id>
+      <id>github-actions</id>
       <build>
         <plugins>
           <plugin>
