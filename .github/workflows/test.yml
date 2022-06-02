@@ -31,7 +31,8 @@ jobs:
           git remote add origin https://github.com/Azure/azure-sdk-for-java.git
           git config core.sparsecheckout true
           echo "sdk/spring" >> .git/info/sparse-checkout
-          git pull --depth=0 origin main
+          git filter-branch -- --all
+#          git pull --depth=0 origin main
       - name: Make Decision Based on Git Diff
         id: make_decision_based_on_git_diff
         run: |
