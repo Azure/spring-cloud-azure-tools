@@ -1,0 +1,67 @@
+name: Update Spring Cloud Azure Support File
+on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '0 0 * * *'
+  workflow_dispatch:
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'Netyyyy/spring-cloud-azure-tools'
+      - name: Generate Spring Cloud Azure Support File
+        run: |
+          mvn compile
+          mvn exec:java -P github-actions -ntp -Dupdate-spring-cloud-azure-support-file=true
+#       - uses: actions/checkout@v3
+#         with:
+#           repository: 'Azure/azure-sdk-for-java'
+#           path: 'azure-sdk-for-java'
+#           ref: main
+#           token: ${{ secrets.ACCESS_TOKEN }}
+#           fetch-depth: 0
+      - name: Sparse Checkout
+        run: |
+          git init azure-sdk-for-java
+          ls -l
+          cd azure-sdk-for-java
+          git remote add origin https://github.com/Azure/azure-sdk-for-java.git
+          git config core.sparsecheckout true
+          echo "sdk/spring" >> .git/info/sparse-checkout
+          git pull --depth=1 origin main
+      - name: Make Decision Based on Git Diff
+        id: make_decision_based_on_git_diff
+        run: |
+          ls -l
+          cd azure-sdk-for-java
+          git checkout -b update-spring-cloud-azure-support-file
+          cp -f ../spring-cloud-azure-supported-spring.json sdk/spring
+          if [[ -n "$(git status -s)" ]] ;then
+            echo '::set-output name=updated_version::true'
+          else
+            echo "No file changes, no commits."
+          fi
+      - name: Push Commit
+        if: ${{ steps.make_decision_based_on_git_diff.outputs.updated_version == 'true' }}
+        run: |
+          cd azure-sdk-for-java
+          git config --global user.email github-actions@github.com
+          git config --global user.name github-actions
+          git add sdk/spring/spring-cloud-azure-supported-spring.json
+          git commit -m "Update Spring Boot and Spring Cloud versions for the compatibility test. This commit is created by GitHub Action: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
+          git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git"
+
+      - name: Create Pull Request
+        if: ${{ steps.make_decision_based_on_git_diff.outputs.updated_version == 'true' }}
+        uses: vsoch/pull-request-action@master
+        env:
+          PULL_REQUEST_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          PULL_REQUEST_REPOSITORY: Azure/azure-sdk-for-java
+          PULL_REQUEST_TITLE: "Update Spring Cloud Azure Support File"
+          PULL_REQUEST_FROM_BRANCH: "${{ secrets.USER }}:update-spring-cloud-azure-support-file"
+          PULL_REQUEST_BRANCH: "main"
+          PULL_REQUEST_BODY: "Update Spring Boot and Spring Cloud versions for the compatibility test. This PR is created by GitHub Actions: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
+          PULL_REQUEST_DRAFT: true
