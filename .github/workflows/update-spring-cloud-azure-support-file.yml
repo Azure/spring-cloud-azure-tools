@@ -39,12 +39,6 @@ jobs:
             echo '::set-output name=updated_version::false'
             echo "Branch exists, cancel commit"
           fi
-      - name: Check whether branch exist
-        id: check-whether-branch-exist
-        run: |
-          if git rev-parse --verify update-spring-cloud-azure-support-file; then
-            echo "Branch exists, cancel commit"
-          else
       - name: Push Commit
         if: ${{ steps.make_decision_based_on_git_diff_and_branch_status.outputs.updated_version == 'true' }}
         run: |
