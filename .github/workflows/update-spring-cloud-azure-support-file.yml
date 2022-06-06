@@ -28,6 +28,7 @@ jobs:
         run: |
           git config --global user.email github-actions@github.com
           git config --global user.name github-actions
+          git remote add check ${{ secrets.BRANCH_REPO }}
           if [[ $(git ls-remote --heads ${{ secrets.BRANCH_REPO }} update-spring-cloud-azure-support-file | wc -l) -eq 0 ]]; then
             cd azure-sdk-for-java
             git checkout -b update-spring-cloud-azure-support-file
