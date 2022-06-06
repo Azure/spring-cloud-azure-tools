@@ -47,7 +47,7 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
     @Override
     public void run(String... args) throws Exception {
         LOGGER.info("---------- starting {} ----------", UpdateSpringCloudAzureSupportFileRunner.class.getSimpleName());
-        List<SpringCloudAzureSupportMetadata> azureSupportStatus = azureSupportMetadataReader.getAzureSupportStatus();
+        List<SpringCloudAzureSupportMetadata> azureSupportMetadata = azureSupportMetadataReader.getAzureSupportMetadata();
 
         List<SpringCloudAzureSupportMetadata> result = springProjectMetadataReader
             .getProjectReleases("spring-boot")
@@ -56,9 +56,15 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
             .filter(Objects::nonNull)
             .peek(s -> s.setSpringCloudVersion(findCompatibleSpringCloudVersion(s.getSpringBootVersion())))
             .peek(s -> s.setSupportStatus(
-                findSupportStatus(azureSupportStatus, s.getSpringBootVersion()).orElse(null)))
+                findSupportStatus(azureSupportMetadata, s.getSpringBootVersion()).orElse(null)))
             .collect(Collectors.toList());
-
+        result.addAll(azureSupportMetadata
+        .stream()
+        .filter(m -> !result.stream().map(SpringCloudAzureSupportMetadata::getSpringBootVersion)
+                            .collect(Collectors.toList()).contains(m.getSpringBootVersion()))
+        .peek(m -> m.setSupportStatus(SupportStatus.END_OF_LIFE))
+        .peek(m -> m.setCurrent(false))
+        .collect(Collectors.toList()));
         writeToFile(result);
     }
 
