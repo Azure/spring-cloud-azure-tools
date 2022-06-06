@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: 'Netyyyy/spring-cloud-azure-tools'
+          repository: 'Azure/spring-cloud-azure-tools'
       - name: Generate Spring Cloud Azure Support File
         run: |
           mvn compile
