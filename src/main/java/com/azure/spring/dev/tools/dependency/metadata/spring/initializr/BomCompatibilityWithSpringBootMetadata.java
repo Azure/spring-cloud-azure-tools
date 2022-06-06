@@ -1,9 +1,7 @@
 package com.azure.spring.dev.tools.dependency.metadata.spring.initializr;
 
-import lombok.Data;
 
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  *     {
@@ -17,7 +15,6 @@ import java.util.Map;
  *       "2022.0.0-M2": "Spring Boot >=3.0.0-M2 and <3.1.0-M1"
  *     }
  */
-@Data
 public class BomCompatibilityWithSpringBootMetadata extends HashMap<String, String> {
 
 }

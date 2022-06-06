@@ -26,9 +26,9 @@ jobs:
       - name: Make Decision Based on Git Diff and Branch Status
         id: make_decision_based_on_git_diff_and_branch_status
         run: |
-          git config --global user.email github-actions@github.com
-          git config --global user.name github-actions
           if [[ $(git ls-remote --heads ${{ secrets.BRANCH_REPO }} update-spring-cloud-azure-support-file | wc -l) -eq 0 ]]; then
+            git config --global user.email github-actions@github.com
+            git config --global user.name github-actions
             cd azure-sdk-for-java
             git checkout -b update-spring-cloud-azure-support-file
             cp -f ../spring-cloud-azure-supported-spring.json sdk/spring
