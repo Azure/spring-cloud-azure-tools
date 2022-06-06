@@ -27,8 +27,6 @@ jobs:
         id: make_decision_based_on_git_diff_and_branch_status
         run: |
           if [[ $(git ls-remote --heads ${{ secrets.BRANCH_REPO }} update-spring-cloud-azure-support-file | wc -l) -eq 0 ]]; then
-            git config --global user.email github-actions@github.com
-            git config --global user.name github-actions
             cd azure-sdk-for-java
             git checkout -b update-spring-cloud-azure-support-file
             cp -f ../spring-cloud-azure-supported-spring.json sdk/spring
@@ -45,6 +43,8 @@ jobs:
         if: ${{ steps.make_decision_based_on_git_diff_and_branch_status.outputs.updated_version == 'true' }}
         run: |
           cd azure-sdk-for-java
+          git config --global user.email github-actions@github.com
+          git config --global user.name github-actions
           git add sdk/spring/spring-cloud-azure-supported-spring.json
           git commit -m "Update Spring Boot and Spring Cloud versions for the compatibility test. This commit is created by GitHub Action: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
           git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git"
