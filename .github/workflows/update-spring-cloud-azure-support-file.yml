@@ -37,6 +37,7 @@ jobs:
             else
               echo "No file changes, no commits."
             fi
+          fi
       - run: |
           git rev-parse --verify update-spring-cloud-azure-support-file
       - name: Check whether branch exist
