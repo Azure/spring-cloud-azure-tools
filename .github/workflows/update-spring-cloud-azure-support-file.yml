@@ -26,9 +26,7 @@ jobs:
       - name: Make Decision Based on Git Diff and Branch Status
         id: make_decision_based_on_git_diff_and_branch_status
         run: |
-          if git rev-parse --verify update-spring-cloud-azure-support-file; then
-            echo "Branch exists, cancel commit"
-          else
+          if (git ls-remote --heads ${{ secrets.BRANCH_REPO }} update-spring-cloud-azure-support-file | wc -l) -eq 0; then
             cd azure-sdk-for-java
             git checkout -b update-spring-cloud-azure-support-file
             cp -f ../spring-cloud-azure-supported-spring.json sdk/spring
@@ -37,9 +35,10 @@ jobs:
             else
               echo "No file changes, no commits."
             fi
+          else
+            echo '::set-output name=updated_version::false'
+            echo "Branch exists, cancel commit"
           fi
-      - run: |
-          git rev-parse --verify update-spring-cloud-azure-support-file
       - name: Check whether branch exist
         id: check-whether-branch-exist
         run: |
