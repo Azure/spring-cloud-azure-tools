@@ -7,7 +7,10 @@ import com.azure.spring.dev.tools.dependency.metadata.maven.VersionRange;
 import com.azure.spring.dev.tools.dependency.support.SpringCloudAzureSupportMetadataReader;
 import com.azure.spring.dev.tools.dependency.support.SpringInitializrMetadataReader;
 import com.azure.spring.dev.tools.dependency.support.SpringProjectMetadataReader;
+import com.fasterxml.jackson.core.util.DefaultIndenter;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.slf4j.Logger;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -16,11 +19,13 @@ import org.springframework.stereotype.Component;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.azure.spring.dev.tools.dependency.support.converter.SpringCloudAzureSupportMetadataConverter.CONVERTER;
 
@@ -49,39 +54,56 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
         LOGGER.info("---------- starting {} ----------", UpdateSpringCloudAzureSupportFileRunner.class.getSimpleName());
         List<SpringCloudAzureSupportMetadata> azureSupportMetadata = azureSupportMetadataReader.getAzureSupportMetadata();
 
-        List<SpringCloudAzureSupportMetadata> result = springProjectMetadataReader
+        final Set<String> activeSpringBootVersions = new HashSet<>();
+
+        List<SpringCloudAzureSupportMetadata> current = springProjectMetadataReader
             .getProjectReleases("spring-boot")
             .stream()
             .map(CONVERTER::convert)
             .filter(Objects::nonNull)
             .peek(s -> s.setSpringCloudVersion(findCompatibleSpringCloudVersion(s.getSpringBootVersion())))
             .peek(s -> s.setSupportStatus(
-                findSupportStatus(azureSupportMetadata, s.getSpringBootVersion()).orElse(null)))
+                findSupportStatus(azureSupportMetadata, s.getSpringBootVersion())))
+            .peek(s -> activeSpringBootVersions.add(s.getSpringBootVersion()))
             .collect(Collectors.toList());
-        result.addAll(azureSupportMetadata
-        .stream()
-        .filter(m -> !result.stream().map(SpringCloudAzureSupportMetadata::getSpringBootVersion)
-                            .collect(Collectors.toList()).contains(m.getSpringBootVersion()))
-        .peek(m -> m.setSupportStatus(SupportStatus.END_OF_LIFE))
-        .peek(m -> m.setCurrent(false))
-        .collect(Collectors.toList()));
+
+        List<SpringCloudAzureSupportMetadata> snapshot = azureSupportMetadata
+            .stream()
+            .filter(s -> !activeSpringBootVersions.contains(s.getSpringBootVersion()))
+            .peek(s -> s.setCurrent(false))
+            .peek(s -> s.setSupportStatus(SupportStatus.END_OF_LIFE))
+            .collect(Collectors.toList());
+
+        List<SpringCloudAzureSupportMetadata> result = Stream.concat(current.stream(), snapshot.stream())
+                                                             .sorted((o1, o2) -> {
+            Version v1 = Version.parse(o1.getSpringBootVersion());
+            Version v2 = Version.parse(o2.getSpringBootVersion());
+            return v2.compareTo(v1);
+        }).collect(Collectors.toList());
+
         writeToFile(result);
     }
 
     private void writeToFile(List<SpringCloudAzureSupportMetadata> result) throws IOException {
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("spring-cloud-azure-supported-spring.json"))) {
-            bufferedWriter.write(this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(result));
+            objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+            DefaultPrettyPrinter prettyPrinter = new DefaultPrettyPrinter();
+            prettyPrinter.indentArraysWith(DefaultIndenter.SYSTEM_LINEFEED_INSTANCE);
+
+            bufferedWriter.write(this.objectMapper.writer(prettyPrinter).writeValueAsString(result));
             bufferedWriter.newLine();
         }
     }
 
-    private Optional<SupportStatus> findSupportStatus(List<SpringCloudAzureSupportMetadata> azureSupportStatus,
-                                                      String springBootVersion) {
-        return azureSupportStatus
-            .stream()
-            .filter(s -> springBootVersion.equals(s.getSpringBootVersion()))
-            .map(SpringCloudAzureSupportMetadata::getSupportStatus)
-            .findFirst();
+    private SupportStatus findSupportStatus(List<SpringCloudAzureSupportMetadata> azureSupportStatus,
+                                            String springBootVersion) {
+        for (SpringCloudAzureSupportMetadata azureSupportMetadata : azureSupportStatus) {
+            if (springBootVersion.equalsIgnoreCase(azureSupportMetadata.getSpringBootVersion())) {
+                return azureSupportMetadata.getSupportStatus();
+            }
+        }
+        return null;
     }
 
     private String findCompatibleSpringCloudVersion(String springBootVersion) {
