@@ -39,7 +39,7 @@ public class SpringCloudAzureSupportMetadataReader {
      * Get the SpringCloudAzure supportStatus of SpringBoot versions, such as "SUPPORTED", "END_OF_LIFE", "TODO"
      * @return list of SpringCloudAzureSupportMetadata
      */
-    public List<SpringCloudAzureSupportMetadata> getAzureSupportStatus() {
+    public List<SpringCloudAzureSupportMetadata> getAzureSupportMetadata() {
         // Github always return text/plain
         String response = this.restTemplate.getForObject(dependencyProperties.getAzure().getSupportMetadataUrl(), String.class);
         try {
