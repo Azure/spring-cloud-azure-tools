@@ -23,5 +23,6 @@ public class DependencyProperties {
     @Data
     public static class Azure {
         private String supportMetadataUrl;
+        private String currentVersionUrl;
     }
 }

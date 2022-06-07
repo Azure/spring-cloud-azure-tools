@@ -12,6 +12,7 @@ import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -32,7 +33,7 @@ import static com.azure.spring.dev.tools.dependency.support.converter.SpringClou
 @ConditionalOnProperty("update-spring-cloud-azure-support-file")
 @Component
 public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunner {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(UpdateSpringCloudAzureSupportFileRunner.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UpdateSpringCloudAzureSupportFileRunner.class);
     private final SpringProjectMetadataReader springProjectMetadataReader;
     private final Map<String, VersionRange> springCloudCompatibleSpringBootVersionRanges;
     private final SpringCloudAzureSupportMetadataReader azureSupportMetadataReader;

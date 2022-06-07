@@ -1,5 +1,6 @@
 package com.azure.spring.dev.tools.dependency.configuration;
 
+import com.azure.spring.dev.tools.dependency.support.SpringCloudAzureCurrentVersionReader;
 import com.azure.spring.dev.tools.dependency.support.SpringCloudAzureSupportMetadataReader;
 import com.azure.spring.dev.tools.dependency.support.SpringInitializrMetadataReader;
 import com.azure.spring.dev.tools.dependency.support.SpringProjectMetadataReader;
@@ -40,6 +41,12 @@ public class DependencyAutoConfiguration {
     public SpringInitializrMetadataReader springCloudVersionRangesMetadataReader(RestTemplate restTemplate,
                                                                                  DependencyProperties properties) {
         return new SpringInitializrMetadataReader(restTemplate, properties);
+    }
+
+    @Bean
+    public SpringCloudAzureCurrentVersionReader springCloudAzureCurrentVersionReader(RestTemplate restTemplate,
+                                                                                     DependencyProperties properties) {
+        return new SpringCloudAzureCurrentVersionReader(restTemplate, properties);
     }
 
 }

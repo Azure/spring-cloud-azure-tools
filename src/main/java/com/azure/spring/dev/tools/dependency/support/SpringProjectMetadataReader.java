@@ -37,4 +37,13 @@ public class SpringProjectMetadataReader {
         return metadata.getProjectReleases();
     }
 
+    public String getCurrentVersion() {
+        return getProjectReleases("spring-boot")
+            .stream()
+            .filter(p -> p.isCurrent())
+            .filter(Objects::nonNull)
+            .map(ProjectRelease::getVersion)
+            .findFirst()
+            .get();
+    }
 }
