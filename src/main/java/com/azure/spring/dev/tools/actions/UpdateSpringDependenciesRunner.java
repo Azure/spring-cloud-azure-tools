@@ -36,8 +36,9 @@ public class UpdateSpringDependenciesRunner implements CommandLineRunner {
     public void run(String... args) throws Exception {
         LOGGER.info("---------- starting {} ----------", UpdateSpringDependenciesRunner.class.getSimpleName());
         String latestSpringBootVersion = metadataReader.getCurrentVersion();
+        String azureSupportedVersion = azureCurrentVersionReader.getCurrentSupportedSpringBootVersion();
         boolean update = false;
-        if (!latestSpringBootVersion.equals(azureCurrentVersionReader.getCurrentSupportedSpringBootVersion())) {
+        if (!azureSupportedVersion.equals(latestSpringBootVersion)) {
             update = true;
         }
         if (update) {
@@ -51,6 +52,8 @@ public class UpdateSpringDependenciesRunner implements CommandLineRunner {
                     .map(Map.Entry::getKey)
                     .findFirst()
                     .get());
+                bufferedWriter.newLine();
+                bufferedWriter.write(azureSupportedVersion);
             }
         }
     }

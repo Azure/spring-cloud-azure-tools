@@ -1,0 +1,75 @@
+#1. Get `SPRING_BOOT_VERSION` from [spring-boot-dependencies tags](https://github.com/spring-projects/spring-boot/tags). Get `SPRING_CLOUD_VERSION` from [spring-cloud-dependencies tags](https://github.com/spring-cloud/spring-cloud-release/tags). Note that spring-cloud version should compatible with spring-boot version. Refs: [Spring Cloud Release train Spring Boot compatibility](https://spring.io/projects/spring-cloud).
+#2. Update `SPRING_BOOT_VERSION` and `SPRING_CLOUD_VERSION` in `get_spring_boot_managed_external_dependencies.py`.
+#3. Run command `python .\sdk\spring\scripts\get_spring_boot_managed_external_dependencies.py`. Then a file named `spring_boot_SPRING_BOOT_VERSION_managed_external_dependencies.txt` will be created in `.\sdk\spring\scripts`.
+#4. Update `SPRING_BOOT_VERSION` in `sync_external_dependencies.py`.
+#5. Run command `python .\sdk\spring\scripts\sync_external_dependencies.py`. Then versions in `\eng\versioning\external_dependencies.txt` will be synchronized with `spring_boot_SPRING_BOOT_VERSION_managed_external_dependencies.txt`.
+#6. Update the comment at the beginning of `\eng\versioning\external_dependencies.txt`: Update the file name of `spring_boot_SPRING_BOOT_VERSION_managed_external_dependencies.txt`.
+#7. Run command `python .\eng\versioning\update_versions.py --ut external_dependency --sr`
+#8. Run command `.\eng\versioning\pom_file_version_scanner.ps1 -Debug`. If there is error, fix it.
+#9. Update changelog about compatible Spring Boot versions and Spring Cloud versions in `/sdk/spring/CHANGELOG.md`.
+#10. Update two spring-boot versions and two spring-cloud versions in`/sdk/spring/ci.yml` for pipeline, then use script `get_spring_boot_managed_external_dependencies.py` generate corresponding file `spring_boot_SPRING_BOOT_VERSION_managed_external_dependencies.txt`, delete the old two files.
+name: Update Spring Dependencies
+on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '0 0 * * *'
+  workflow_dispatch:
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'Netyyyy/spring-cloud-azure-tools'
+      - name: Generate Version File or Not
+        run: |
+          mvn compile
+          mvn exec:java -P github-actions -ntp -Dupdate-spring-dependencies=true
+      - name: Confirm Whether to Update
+        id: confirm_whether_to_update
+        run: |
+          if [! -f '$version.txt']; then
+            echo '::set-output name=update::true'
+            echo '::set-output name=spring_boot_version::$(sed -n 1p $version.txt)'
+            echo '::set-output name=spring_cloud_version::$(sed -n 2p $version.txt)'
+            echo '::set-output name=last_version::$(sed -n 3p $version.txt)'
+          else
+            echo '::set-output name=update::false'
+      - uses: actions/checkout@v3
+        if: ${{ steps.confirm_whether_to_update.outputs.updated == 'true' }}
+        with:
+          repository: 'Netyyyy/azure-sdk-for-java'
+          path: 'azure-sdk-for-java'
+          ref: myao/changepy
+          token: ${{ secrets.ACCESS_TOKEN }}
+          fetch-depth: 0
+      - name: Updating Versions
+        if: ${{ steps.confirm_whether_to_update.outputs.updated == 'true' }}
+        run: |
+          cd azure-sdk-for-java
+          git checkout -b update-spring-dependencies
+          python .\sdk\spring\scripts\get_spring_boot_managed_external_dependencies.py -b steps.confirm_whether_to_update.outputs.spring_boot_version -c steps.confirm_whether_to_update.outputs.spring_cloud_version
+          python .\sdk\spring\scripts\sync_external_dependencies.py -b steps.confirm_whether_to_update.outputs.spring_boot_version
+          python .\eng\versioning\update_versions.py --ut external_dependency --sr
+      - name: Push Commit
+        if: ${{ steps.confirm_whether_to_update.outputs.updated == 'true' }}
+        run: |
+          cd azure-sdk-for-java
+          git config --global user.email github-actions@github.com
+          git config --global user.name github-actions
+          git rm spring_boot_${{ steps.confirm_whether_to_update.outputs.last_version }}_managed_external_dependencies.txt
+          git add -A
+          git commit -m "Update Spring Dependencies. This commit is created by GitHub Action: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
+          git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git"
+      - name: Create Pull Request
+        if: ${{ steps.confirm_whether_to_update.outputs.updated == 'true' }}
+        uses: vsoch/pull-request-action@master
+        env:
+          PULL_REQUEST_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          PULL_REQUEST_REPOSITORY: Azure/azure-sdk-for-java
+          PULL_REQUEST_TITLE: "Update Spring Dependencies to align with Spring Boot ${{ steps.confirm_whether_to_update.outputs.spring_boot_version }}"
+          PULL_REQUEST_FROM_BRANCH: "${{ secrets.USER }}:update-spring-dependencies"
+          PULL_REQUEST_BRANCH: "main"
+          PULL_REQUEST_BODY: "Update Spring Dependencies to align with Spring Boot ${{ steps.confirm_whether_to_update.outputs.spring_boot_version }}. This PR is created by GitHub Actions: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
+          PULL_REQUEST_DRAFT: true
