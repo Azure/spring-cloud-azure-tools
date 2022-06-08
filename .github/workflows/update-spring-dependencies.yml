@@ -29,15 +29,20 @@ jobs:
       - name: Confirm Whether to Update
         id: confirm_whether_to_update
         run: |
-          if [! -f '$version.txt']; then
-            echo '::set-output name=update::true'
-            echo '::set-output name=spring_boot_version::$(sed -n 1p $version.txt)'
-            echo '::set-output name=spring_cloud_version::$(sed -n 2p $version.txt)'
-            echo '::set-output name=last_version::$(sed -n 3p $version.txt)'
+          if [[ ! -f '$version.txt' ]]; then
+            echo ::set-output name=update::true
+            echo ::set-output name=spring_boot_version::$(sed -n '1p' version.txt)
+            echo ::set-output name=spring_cloud_version::$(sed -n '2p' version.txt)
+            echo ::set-output name=last_version::$(sed -n '3p' $'version.txt')
           else
-            echo '::set-output name=update::false'
+            echo ::set-output name=update::false
+          fi
+      - name: Update Information
+        run: |
+          echo Updaing Spring Boot Dependencies Version: ${{ steps.confirm_whether_to_update.outputs.spring_boot_version }}
+          echo Updaing Spring Cloud Dependencies Version: ${{ steps.confirm_whether_to_update.outputs.spring_cloud_version }}
       - uses: actions/checkout@v3
-        if: ${{ steps.confirm_whether_to_update.outputs.updated == 'true' }}
+        if: ${{ steps.confirm_whether_to_update.outputs.update == 'true' }}
         with:
           repository: 'Netyyyy/azure-sdk-for-java'
           path: 'azure-sdk-for-java'
@@ -45,29 +50,31 @@ jobs:
           token: ${{ secrets.ACCESS_TOKEN }}
           fetch-depth: 0
       - name: Updating Versions
-        if: ${{ steps.confirm_whether_to_update.outputs.updated == 'true' }}
+        if: ${{ steps.confirm_whether_to_update.outputs.update == 'true' }}
         run: |
           cd azure-sdk-for-java
           git checkout -b update-spring-dependencies
-          python .\sdk\spring\scripts\get_spring_boot_managed_external_dependencies.py -b steps.confirm_whether_to_update.outputs.spring_boot_version -c steps.confirm_whether_to_update.outputs.spring_cloud_version
-          python .\sdk\spring\scripts\sync_external_dependencies.py -b steps.confirm_whether_to_update.outputs.spring_boot_version
-          python .\eng\versioning\update_versions.py --ut external_dependency --sr
+          pip install termcolor
+          pip install in_place
+          python ./sdk/spring/scripts/get_spring_boot_managed_external_dependencies.py -b ${{ steps.confirm_whether_to_update.outputs.spring_boot_version }} -c ${{ steps.confirm_whether_to_update.outputs.spring_cloud_version }}
+          python ./sdk/spring/scripts/sync_external_dependencies.py -b ${{ steps.confirm_whether_to_update.outputs.spring_boot_version }}
+          python ./eng/versioning/update_versions.py --ut external_dependency --sr
       - name: Push Commit
-        if: ${{ steps.confirm_whether_to_update.outputs.updated == 'true' }}
+        if: ${{ steps.confirm_whether_to_update.outputs.update == 'true' }}
         run: |
           cd azure-sdk-for-java
           git config --global user.email github-actions@github.com
           git config --global user.name github-actions
-          git rm spring_boot_${{ steps.confirm_whether_to_update.outputs.last_version }}_managed_external_dependencies.txt
+          git rm ./sdk/spring/scripts/spring_boot_${{ steps.confirm_whether_to_update.outputs.last_version }}_managed_external_dependencies.txt
           git add -A
           git commit -m "Update Spring Dependencies. This commit is created by GitHub Action: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
           git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git"
       - name: Create Pull Request
-        if: ${{ steps.confirm_whether_to_update.outputs.updated == 'true' }}
+        if: ${{ steps.confirm_whether_to_update.outputs.update == 'true' }}
         uses: vsoch/pull-request-action@master
         env:
           PULL_REQUEST_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-          PULL_REQUEST_REPOSITORY: Azure/azure-sdk-for-java
+          PULL_REQUEST_REPOSITORY: Netyyyy/azure-sdk-for-java
           PULL_REQUEST_TITLE: "Update Spring Dependencies to align with Spring Boot ${{ steps.confirm_whether_to_update.outputs.spring_boot_version }}"
           PULL_REQUEST_FROM_BRANCH: "${{ secrets.USER }}:update-spring-dependencies"
           PULL_REQUEST_BRANCH: "main"
