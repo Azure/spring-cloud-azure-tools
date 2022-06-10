@@ -1,13 +1,11 @@
 #1. Get `SPRING_BOOT_VERSION` from [spring-boot-dependencies tags](https://github.com/spring-projects/spring-boot/tags). Get `SPRING_CLOUD_VERSION` from [spring-cloud-dependencies tags](https://github.com/spring-cloud/spring-cloud-release/tags). Note that spring-cloud version should compatible with spring-boot version. Refs: [Spring Cloud Release train Spring Boot compatibility](https://spring.io/projects/spring-cloud).
-#2. Update `SPRING_BOOT_VERSION` and `SPRING_CLOUD_VERSION` in `get_spring_boot_managed_external_dependencies.py`.
-#3. Run command `python .\sdk\spring\scripts\get_spring_boot_managed_external_dependencies.py`. Then a file named `spring_boot_SPRING_BOOT_VERSION_managed_external_dependencies.txt` will be created in `.\sdk\spring\scripts`.
-#4. Update `SPRING_BOOT_VERSION` in `sync_external_dependencies.py`.
-#5. Run command `python .\sdk\spring\scripts\sync_external_dependencies.py`. Then versions in `\eng\versioning\external_dependencies.txt` will be synchronized with `spring_boot_SPRING_BOOT_VERSION_managed_external_dependencies.txt`.
-#6. Update the comment at the beginning of `\eng\versioning\external_dependencies.txt`: Update the file name of `spring_boot_SPRING_BOOT_VERSION_managed_external_dependencies.txt`.
-#7. Run command `python .\eng\versioning\update_versions.py --ut external_dependency --sr`
-#8. Run command `.\eng\versioning\pom_file_version_scanner.ps1 -Debug`. If there is error, fix it.
-#9. Update changelog about compatible Spring Boot versions and Spring Cloud versions in `/sdk/spring/CHANGELOG.md`.
-#10. Update two spring-boot versions and two spring-cloud versions in`/sdk/spring/ci.yml` for pipeline, then use script `get_spring_boot_managed_external_dependencies.py` generate corresponding file `spring_boot_SPRING_BOOT_VERSION_managed_external_dependencies.txt`, delete the old two files.
+#2. Run command `python .\sdk\spring\scripts\get_spring_boot_managed_external_dependencies.py -b ${SPRING_BOOT_VERSION} -c ${SPRING_CLOUD_VERSION}`. Then a file named `spring_boot_SPRING_BOOT_VERSION_managed_external_dependencies.txt` will be created in `.\sdk\spring\scripts`.
+#3. Run command `python .\sdk\spring\scripts\sync_external_dependencies.py -b ${SPRING_BOOT_VERSION}`. Then versions in `\eng\versioning\external_dependencies.txt` will be synchronized with `spring_boot_${SPRING_BOOT_VERSION}_managed_external_dependencies.txt`.
+#4. Run command: `python .\sdk\spring\scripts\update_external_dependencies_comment.py -b ${SPRING_BOOT_VERSION}` to update the comment at the beginning of `\eng\versioning\external_dependencies.txt`.
+#5. Run command `python .\eng\versioning\update_versions.py --ut external_dependency --sr`
+#6. Run command `.\eng\versioning\pom_file_version_scanner.ps1 -Debug`. If there is error, fix it.
+#7. Run command: `python .\sdk\spring\scripts\update_changelog.py -b ${SPRING_BOOT_VERSION} -c ${SPRING_CLOUD_VERSION}` to update changelog about Spring Boot and Spring Cloud dependencies versions in `/sdk/spring/CHANGELOG.md`.
+#8. When generate `spring_boot_${SPRING_BOOT_VERSION}_managed_external_dependencies.txt` file, delete the old version file.
 name: Update Spring Dependencies
 on:
   schedule:
@@ -21,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: 'Netyyyy/spring-cloud-azure-tools'
+          repository: 'Azure/spring-cloud-azure-tools'
       - name: Generate Version File or Not
         run: |
           mvn compile
@@ -29,13 +27,17 @@ jobs:
       - name: Confirm Whether to Update
         id: confirm_whether_to_update
         run: |
-          if [[ ! -f '$version.txt' ]]; then
-            echo ::set-output name=update::true
-            echo ::set-output name=spring_boot_version::$(sed -n '1p' version.txt)
-            echo ::set-output name=spring_cloud_version::$(sed -n '2p' version.txt)
-            echo ::set-output name=last_version::$(sed -n '3p' $'version.txt')
+          if [[ $(git ls-remote --heads ${{ secrets.BRANCH_REPO }} update-spring-dependencies | wc -l) -eq 0 ]]; then
+            if [[ ! -f '$version.txt' ]]; then
+              echo ::set-output name=update::true
+              echo ::set-output name=spring_boot_version::$(sed -n '1p' version.txt)
+              echo ::set-output name=spring_cloud_version::$(sed -n '2p' version.txt)
+              echo ::set-output name=last_version::$(sed -n '3p' $'version.txt')
+            else
+              echo "No new Spring Boot version, No updates!"
+            fi
           else
-            echo ::set-output name=update::false
+              echo "Branch exists, cancel commit"
           fi
       - name: Update Information
         run: |
@@ -44,9 +46,9 @@ jobs:
       - uses: actions/checkout@v3
         if: ${{ steps.confirm_whether_to_update.outputs.update == 'true' }}
         with:
-          repository: 'Netyyyy/azure-sdk-for-java'
+          repository: 'Azure/azure-sdk-for-java'
           path: 'azure-sdk-for-java'
-          ref: myao/changepy
+          ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
           fetch-depth: 0
       - name: Updating Versions
@@ -58,7 +60,9 @@ jobs:
           pip install in_place
           python ./sdk/spring/scripts/get_spring_boot_managed_external_dependencies.py -b ${{ steps.confirm_whether_to_update.outputs.spring_boot_version }} -c ${{ steps.confirm_whether_to_update.outputs.spring_cloud_version }}
           python ./sdk/spring/scripts/sync_external_dependencies.py -b ${{ steps.confirm_whether_to_update.outputs.spring_boot_version }}
+          python ./sdk/spring/scripts/update_external_dependencies_comment.py -b ${{ steps.confirm_whether_to_update.outputs.spring_boot_version }}
           python ./eng/versioning/update_versions.py --ut external_dependency --sr
+          python ./sdk/spring/scripts/update_changelog.py -b ${{ steps.confirm_whether_to_update.outputs.spring_boot_version }} -c ${{ steps.confirm_whether_to_update.outputs.spring_cloud_version }}
       - name: Push Commit
         if: ${{ steps.confirm_whether_to_update.outputs.update == 'true' }}
         run: |
@@ -74,7 +78,7 @@ jobs:
         uses: vsoch/pull-request-action@master
         env:
           PULL_REQUEST_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-          PULL_REQUEST_REPOSITORY: Netyyyy/azure-sdk-for-java
+          PULL_REQUEST_REPOSITORY: Azure/azure-sdk-for-java
           PULL_REQUEST_TITLE: "Update Spring Dependencies to align with Spring Boot ${{ steps.confirm_whether_to_update.outputs.spring_boot_version }}"
           PULL_REQUEST_FROM_BRANCH: "${{ secrets.USER }}:update-spring-dependencies"
           PULL_REQUEST_BRANCH: "main"
