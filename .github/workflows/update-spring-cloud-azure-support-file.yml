@@ -36,7 +36,6 @@ jobs:
               echo "No file changes, no commits."
             fi
           else
-            echo '::set-output name=updated_version::false'
             echo "Branch exists, cancel commit"
           fi
       - name: Push Commit
