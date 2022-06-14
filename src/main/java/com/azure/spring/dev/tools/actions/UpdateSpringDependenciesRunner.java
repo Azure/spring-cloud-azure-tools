@@ -37,11 +37,7 @@ public class UpdateSpringDependenciesRunner implements CommandLineRunner {
         LOGGER.info("---------- starting {} ----------", UpdateSpringDependenciesRunner.class.getSimpleName());
         String latestSpringBootVersion = metadataReader.getCurrentVersion();
         String azureSupportedVersion = azureCurrentVersionReader.getCurrentSupportedSpringBootVersion();
-        boolean update = false;
         if (!azureSupportedVersion.equals(latestSpringBootVersion)) {
-            update = true;
-        }
-        if (update) {
             try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("version.txt"))) {
                 bufferedWriter.write(latestSpringBootVersion);
                 bufferedWriter.newLine();

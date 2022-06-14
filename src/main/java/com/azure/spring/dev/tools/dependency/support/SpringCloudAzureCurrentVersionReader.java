@@ -1,7 +1,6 @@
 package com.azure.spring.dev.tools.dependency.support;
 
 import com.azure.spring.dev.tools.dependency.configuration.DependencyProperties;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 
@@ -30,7 +29,7 @@ public class SpringCloudAzureCurrentVersionReader {
      * @return the current Spring Boot Version
      */
     public String getCurrentSupportedSpringBootVersion() {
-        String file = this.restTemplate.getForObject(dependencyProperties.getAzure().getCurrentVersionUrl(), String.class);
+        String file = this.restTemplate.getForObject(dependencyProperties.getAzure().getExternalDependenciesFileUrl(), String.class);
         Matcher matcher = SPRING_BOOT_DEPENDENCIES.matcher(file);
         if (matcher.find()) {
             return matcher.group(2);

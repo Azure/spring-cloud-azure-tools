@@ -8,8 +8,9 @@ import org.springframework.web.client.RestTemplate;
 
 class SpringInitializrMetadataReaderTest {
     private final RestTemplate restTemplate = new RestTemplate();
-    private final String actuatorInfoUrl="https://start.spring.io/actuator/info";
-    private final SpringInitializrMetadataReader springInitializrMetadataReader = new SpringInitializrMetadataReader(null, null);
+    private final String actuatorInfoUrl = "https://start.spring.io/actuator/info";
+    private final SpringInitializrMetadataReader springInitializrMetadataReader =
+        new SpringInitializrMetadataReader(null, null);
 
     @Test
     void lowerInclusive() {
