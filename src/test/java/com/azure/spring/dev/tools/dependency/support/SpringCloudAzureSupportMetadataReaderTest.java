@@ -7,7 +7,7 @@ import org.springframework.web.client.RestTemplate;
 
 class SpringCloudAzureSupportMetadataReaderTest {
     private final RestTemplate restTemplate = new RestTemplate();
-    private final String supportMetadataUrl="https://raw.githubusercontent"
+    private final String supportMetadataUrl = "https://raw.githubusercontent"
         + ".com/Azure/azure-sdk-for-java/main/sdk/spring/spring-cloud-azure-supported-spring.json";
 
     @Test
