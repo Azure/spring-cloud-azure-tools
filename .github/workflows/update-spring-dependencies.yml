@@ -27,7 +27,7 @@ jobs:
         id: confirm_whether_to_update
         run: |
           if [[ $(git ls-remote --heads ${{ secrets.BRANCH_REPO }} update-spring-dependencies | wc -l) -eq 0 ]]; then
-            echo "Remote branch doesn't exit"
+            echo "Remote branch doesn't exist"
             if [[ ! -f '$spring-versions.txt' ]]; then
               echo "need_update_version=true" >> $GITHUB_ENV
               echo "spring_boot_version=$(sed -n '1p' spring-versions.txt)" >> $GITHUB_ENV

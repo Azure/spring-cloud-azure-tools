@@ -31,8 +31,9 @@ import java.util.stream.Stream;
 import static com.azure.spring.dev.tools.dependency.support.converter.SpringCloudAzureSupportMetadataConverter.CONVERTER;
 
 /**
- * This Runner was used to generate the newest spring-cloud-azure-supported-spring.json file for
- * spring compatibility tests.
+ * This Runner is used to generate the newest spring-cloud-azure-supported-spring.json file for
+ * spring compatibility tests, which contains information about Spring Boot and Spring Cloud supported by Azure,
+ * such as: https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/spring/spring-cloud-azure-supported-spring.json
  */
 @ConditionalOnProperty("update-spring-cloud-azure-support-file")
 @Component

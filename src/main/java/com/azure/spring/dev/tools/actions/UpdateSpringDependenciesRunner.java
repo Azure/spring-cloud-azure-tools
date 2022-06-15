@@ -16,7 +16,11 @@ import java.io.FileWriter;
 import java.util.Map;
 
 /**
- * This Runner was used to get versions of Spring Boot and Spring Cloud for updating spring dependencies in sdk repo.
+ * This Runner is used to get versions of Spring Boot and Spring Cloud for updating spring dependencies in sdk repo.
+ * It will output a "spring-versions.txt" file with
+ * $latest_spring_boot_version
+ * $latest_spring_cloud_version
+ * $current_azure_supported_spring_boot_version
  */
 @ConditionalOnProperty("update-spring-dependencies")
 @Component
