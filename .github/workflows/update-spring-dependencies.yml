@@ -1,0 +1,97 @@
+#1. Get `SPRING_BOOT_VERSION` from [spring-boot-dependencies tags](https://github.com/spring-projects/spring-boot/tags). Get `SPRING_CLOUD_VERSION` from [spring-cloud-dependencies tags](https://github.com/spring-cloud/spring-cloud-release/tags). Note that spring-cloud version should compatible with spring-boot version. Refs: [Spring Cloud Release train Spring Boot compatibility](https://spring.io/projects/spring-cloud).
+#2. Run command `python .\sdk\spring\scripts\get_spring_boot_managed_external_dependencies.py -b ${SPRING_BOOT_VERSION} -c ${SPRING_CLOUD_VERSION}`. Then a file named `spring_boot_SPRING_BOOT_VERSION_managed_external_dependencies.txt` will be created in `.\sdk\spring\scripts`.
+#3. Run command `python .\sdk\spring\scripts\sync_external_dependencies.py -b ${SPRING_BOOT_VERSION}`. Then versions in `\eng\versioning\external_dependencies.txt` will be synchronized with `spring_boot_${SPRING_BOOT_VERSION}_managed_external_dependencies.txt`.
+#4. Run command: `python .\sdk\spring\scripts\update_external_dependencies_comment.py -b ${SPRING_BOOT_VERSION}` to update the comment at the beginning of `\eng\versioning\external_dependencies.txt`.
+#5. Run command `python .\eng\versioning\update_versions.py --ut external_dependency --sr`
+#6. Run command: `python .\sdk\spring\scripts\update_changelog.py -b ${SPRING_BOOT_VERSION} -c ${SPRING_CLOUD_VERSION}` to update changelog about Spring Boot and Spring Cloud dependencies versions in `/sdk/spring/CHANGELOG.md`.
+#7. When generate `spring_boot_${SPRING_BOOT_VERSION}_managed_external_dependencies.txt` file, delete the old version file.
+name: Update Spring Dependencies
+on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '0 0 * * *'
+  workflow_dispatch:
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'Azure/spring-cloud-azure-tools'
+      - name: Generate Version File
+        run: |
+          mvn compile
+          mvn exec:java -P github-actions -ntp -Dupdate-spring-dependencies=true
+      - name: Confirm Whether to Update
+        id: confirm_whether_to_update
+        run: |
+          if [[ $(git ls-remote --heads ${{ secrets.BRANCH_REPO }} update-spring-dependencies | wc -l) -eq 0 ]]; then
+            echo "Remote branch doesn't exist"
+            if [[ ! -f '$spring-versions.txt' ]]; then
+              echo "need_update_version=true" >> $GITHUB_ENV
+              echo "spring_boot_version=$(sed -n '1p' spring-versions.txt)" >> $GITHUB_ENV
+              echo "spring_cloud_version=$(sed -n '2p' spring-versions.txt)" >> $GITHUB_ENV
+              echo "last_spring_boot_version=$(sed -n '3p' spring-versions.txt)" >> $GITHUB_ENV
+            else
+              echo "No new Spring Boot version, No updates!"
+            fi
+          else
+              echo "Remote branch exists, cancel commit"
+          fi
+      - uses: actions/checkout@v3
+        if: ${{ env.need_update_version == 'true' }}
+        with:
+          repository: 'Azure/azure-sdk-for-java'
+          path: 'azure-sdk-for-java'
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+          fetch-depth: 0
+      - name: Generate spring_boot_managed_external_dependencies.txt
+        if: ${{ env.need_update_version == 'true' }}
+        run: |
+          echo Updaing Spring Boot Dependencies Version: ${{ env.spring_boot_version }}
+          echo Updaing Spring Cloud Dependencies Version: ${{ env.spring_cloud_version }}
+          cd azure-sdk-for-java
+          git checkout -b update-spring-dependencies
+          pip install termcolor
+          python ./sdk/spring/scripts/get_spring_boot_managed_external_dependencies.py -b ${{ env.spring_boot_version }} -c ${{ env.spring_cloud_version }}
+      - name: Update external_dependencies.txt
+        if: ${{ env.need_update_version == 'true' }}
+        run: |
+          cd azure-sdk-for-java
+          pip install termcolor
+          pip install in_place
+          python ./sdk/spring/scripts/sync_external_dependencies.py -b ${{ env.spring_boot_version }}
+          python ./sdk/spring/scripts/update_external_dependencies_comment.py -b ${{ env.spring_boot_version }}
+      - name: Update Versions
+        if: ${{ env.need_update_version == 'true' }}
+        run: |
+          cd azure-sdk-for-java
+          python ./eng/versioning/update_versions.py --ut external_dependency --sr
+      - name: Update ChangeLog
+        if: ${{ env.need_update_version == 'true' }}
+        run: |
+          cd azure-sdk-for-java
+          python ./sdk/spring/scripts/update_changelog.py -b ${{ env.spring_boot_version }} -c ${{ env.spring_cloud_version }}
+      - name: Push Commit
+        if: ${{ env.need_update_version == 'true' }}
+        run: |
+          cd azure-sdk-for-java
+          git config --global user.email github-actions@github.com
+          git config --global user.name github-actions
+          git rm ./sdk/spring/scripts/spring_boot_${{ env.last_spring_boot_version }}_managed_external_dependencies.txt
+          git add -A
+          git commit -m "Update Spring Dependencies. This commit is created by GitHub Action: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
+          git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git"
+      - name: Create Pull Request
+        if: ${{ env.need_update_version == 'true' }}
+        uses: vsoch/pull-request-action@master
+        env:
+          PULL_REQUEST_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          PULL_REQUEST_REPOSITORY: Azure/azure-sdk-for-java
+          PULL_REQUEST_TITLE: "Update Spring Dependencies to align with Spring Boot ${{ env.spring_boot_version }}"
+          PULL_REQUEST_FROM_BRANCH: "${{ secrets.USER }}:update-spring-dependencies"
+          PULL_REQUEST_BRANCH: "main"
+          PULL_REQUEST_BODY: "Update Spring Dependencies to align with Spring Boot ${{ env.spring_boot_version }}. This PR is created by GitHub Actions: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
+          PULL_REQUEST_DRAFT: true
