@@ -3,9 +3,8 @@
 #3. Run command `python .\sdk\spring\scripts\sync_external_dependencies.py -b ${SPRING_BOOT_VERSION}`. Then versions in `\eng\versioning\external_dependencies.txt` will be synchronized with `spring_boot_${SPRING_BOOT_VERSION}_managed_external_dependencies.txt`.
 #4. Run command: `python .\sdk\spring\scripts\update_external_dependencies_comment.py -b ${SPRING_BOOT_VERSION}` to update the comment at the beginning of `\eng\versioning\external_dependencies.txt`.
 #5. Run command `python .\eng\versioning\update_versions.py --ut external_dependency --sr`
-#6. Run command `.\eng\versioning\pom_file_version_scanner.ps1 -Debug`. If there is error, fix it.
-#7. Run command: `python .\sdk\spring\scripts\update_changelog.py -b ${SPRING_BOOT_VERSION} -c ${SPRING_CLOUD_VERSION}` to update changelog about Spring Boot and Spring Cloud dependencies versions in `/sdk/spring/CHANGELOG.md`.
-#8. When generate `spring_boot_${SPRING_BOOT_VERSION}_managed_external_dependencies.txt` file, delete the old version file.
+#6. Run command: `python .\sdk\spring\scripts\update_changelog.py -b ${SPRING_BOOT_VERSION} -c ${SPRING_CLOUD_VERSION}` to update changelog about Spring Boot and Spring Cloud dependencies versions in `/sdk/spring/CHANGELOG.md`.
+#7. When generate `spring_boot_${SPRING_BOOT_VERSION}_managed_external_dependencies.txt` file, delete the old version file.
 name: Update Spring Dependencies
 on:
   schedule:
