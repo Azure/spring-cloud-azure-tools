@@ -1,4 +1,4 @@
-s[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=stliu_azure-sdk-for-java&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=stliu_azure-sdk-for-java)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=stliu_azure-sdk-for-java&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=stliu_azure-sdk-for-java)
 # Overview
 
 This repo hosts various tools for [Spring Cloud Azure](https://github.com/Azure/azure-sdk-for-java/tree/main/sdk/spring) development.
