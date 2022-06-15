@@ -30,6 +30,10 @@ import java.util.stream.Stream;
 
 import static com.azure.spring.dev.tools.dependency.support.converter.SpringCloudAzureSupportMetadataConverter.CONVERTER;
 
+/**
+ * This Runner was used to generate the newest spring-cloud-azure-supported-spring.json file for
+ * spring compatibility tests.
+ */
 @ConditionalOnProperty("update-spring-cloud-azure-support-file")
 @Component
 public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunner {
