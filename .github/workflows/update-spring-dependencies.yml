@@ -24,7 +24,6 @@ jobs:
           mvn compile
           mvn exec:java -P github-actions -ntp -Dupdate-spring-dependencies=true
       - name: Confirm Whether to Update
-        id: confirm_whether_to_update
         run: |
           if [[ $(git ls-remote --heads ${{ secrets.BRANCH_REPO }} update-spring-dependencies | wc -l) -eq 0 ]]; then
             echo "Remote branch doesn't exist"
