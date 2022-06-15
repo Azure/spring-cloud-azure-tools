@@ -15,6 +15,9 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.util.Map;
 
+/**
+ * This Runner was used to get versions of Spring Boot and Spring Cloud for updating spring dependencies in sdk repo.
+ */
 @ConditionalOnProperty("update-spring-dependencies")
 @Component
 public class UpdateSpringDependenciesRunner implements CommandLineRunner {
@@ -38,7 +41,7 @@ public class UpdateSpringDependenciesRunner implements CommandLineRunner {
         String latestSpringBootVersion = metadataReader.getCurrentVersion();
         String azureSupportedVersion = azureCurrentVersionReader.getCurrentSupportedSpringBootVersion();
         if (!azureSupportedVersion.equals(latestSpringBootVersion)) {
-            try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("version.txt"))) {
+            try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("spring-versions.txt"))) {
                 bufferedWriter.write(latestSpringBootVersion);
                 bufferedWriter.newLine();
                 bufferedWriter.write(springCloudCompatibleSpringBootVersionRanges
