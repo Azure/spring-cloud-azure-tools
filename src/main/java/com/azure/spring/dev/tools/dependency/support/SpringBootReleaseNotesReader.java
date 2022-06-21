@@ -9,6 +9,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.io.IOException;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
+import java.util.concurrent.TimeUnit;
 
 
 public class SpringBootReleaseNotesReader {
@@ -21,7 +24,10 @@ public class SpringBootReleaseNotesReader {
 
     public String getReleaseNotes(String version) {
         String url = dependencyProperties.getRelease().getReleaseNotesUrl() + version;
-        OkHttpClient okHttpClient = new OkHttpClient();
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(20,TimeUnit.SECONDS)
+            .build();
         Request request = new Request.Builder().url(url).build();
         Call call = okHttpClient.newCall(request);
         String htmlContents = null;
@@ -29,7 +35,12 @@ public class SpringBootReleaseNotesReader {
             Response response = call.execute();
             htmlContents = response.body().string();
         } catch (IOException e) {
-            throw new IllegalStateException(e.getMessage());
+            if (e instanceof SocketTimeoutException) {
+                throw new IllegalStateException("Timed out");
+            }
+            if (e instanceof ConnectException) {
+                throw new IllegalStateException("Failed to connection");
+            }
         }
         Document doc = Jsoup.parse(htmlContents);
         return doc.getElementsByClass("markdown-body my-3").toString();
