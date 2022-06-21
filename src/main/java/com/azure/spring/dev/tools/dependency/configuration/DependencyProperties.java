@@ -9,6 +9,7 @@ public class DependencyProperties {
     private final Metadata metadata = new Metadata();
     private final Initializr initializr = new Initializr();
     private final Azure azure = new Azure();
+    private final Release release = new Release();
 
     @Data
     public static class Metadata {
@@ -24,5 +25,10 @@ public class DependencyProperties {
     public static class Azure {
         private String supportMetadataUrl;
         private String externalDependenciesFileUrl;
+    }
+
+    @Data
+    public static class Release {
+        private String releaseNotesUrl;
     }
 }

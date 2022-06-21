@@ -2,6 +2,7 @@ package com.azure.spring.dev.tools.actions;
 
 import com.azure.spring.dev.tools.dependency.metadata.maven.Version;
 import com.azure.spring.dev.tools.dependency.metadata.maven.VersionRange;
+import com.azure.spring.dev.tools.dependency.support.SpringBootReleaseNotesReader;
 import com.azure.spring.dev.tools.dependency.support.SpringCloudAzureCurrentVersionReader;
 import com.azure.spring.dev.tools.dependency.support.SpringInitializrMetadataReader;
 import com.azure.spring.dev.tools.dependency.support.SpringProjectMetadataReader;
@@ -16,11 +17,12 @@ import java.io.FileWriter;
 import java.util.Map;
 
 /**
- * This Runner is used to get versions of Spring Boot and Spring Cloud for updating spring dependencies in sdk repo.
- * It will output a "spring-versions.txt" file with
- * $latest_spring_boot_version
- * $latest_spring_cloud_version
- * $current_azure_supported_spring_boot_version
+ * This Runner is used to get versions of Spring Boot and Spring Cloud for updating spring dependencies in sdk repo and
+ * releaseNotes of Spring Boot fot Pr description.
+ * It will output two files "spring-versions.txt" and "pr-descriptions.txt".
+ * "spring-versions.txt" contains three versions $latest_spring_boot_version, $latest_spring_cloud_version and
+ * $current_azure_supported_spring_boot_version.
+ * "pr-descriptions.txt" contains Spring Boot releaseNotes' information.
  */
 @ConditionalOnProperty("update-spring-dependencies")
 @Component
@@ -29,14 +31,17 @@ public class UpdateSpringDependenciesRunner implements CommandLineRunner {
     private final SpringProjectMetadataReader metadataReader;
     private final Map<String, VersionRange> springCloudCompatibleSpringBootVersionRanges;
     private final SpringCloudAzureCurrentVersionReader azureCurrentVersionReader;
+    private final SpringBootReleaseNotesReader springBootReleaseNotesReader;
 
     public UpdateSpringDependenciesRunner(SpringProjectMetadataReader metadataReader,
                                           SpringInitializrMetadataReader springInitializrMetadataReader,
-                                          SpringCloudAzureCurrentVersionReader azureCurrentVersionReader) {
+                                          SpringCloudAzureCurrentVersionReader azureCurrentVersionReader,
+                                          SpringBootReleaseNotesReader springBootReleaseNotesReader) {
         this.metadataReader = metadataReader;
         this.azureCurrentVersionReader = azureCurrentVersionReader;
         this.springCloudCompatibleSpringBootVersionRanges =
             springInitializrMetadataReader.getCompatibleSpringBootVersions("spring-cloud");
+        this.springBootReleaseNotesReader = springBootReleaseNotesReader;
     }
 
     @Override
@@ -44,6 +49,7 @@ public class UpdateSpringDependenciesRunner implements CommandLineRunner {
         LOGGER.info("---------- starting {} ----------", UpdateSpringDependenciesRunner.class.getSimpleName());
         String latestSpringBootVersion = metadataReader.getCurrentVersion();
         String azureSupportedVersion = azureCurrentVersionReader.getCurrentSupportedSpringBootVersion();
+        String releaseNotesContents = springBootReleaseNotesReader.getReleaseNotes(latestSpringBootVersion);
         if (!azureSupportedVersion.equals(latestSpringBootVersion)) {
             try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("spring-versions.txt"))) {
                 bufferedWriter.write(latestSpringBootVersion);
@@ -57,6 +63,26 @@ public class UpdateSpringDependenciesRunner implements CommandLineRunner {
                     .get());
                 bufferedWriter.newLine();
                 bufferedWriter.write(azureSupportedVersion);
+            }
+            try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("pr-descriptions.txt"))) {
+                bufferedWriter.write(String.format("Updates external dependencies to align with Spring Boot version "
+                    + "[%s](https://repo1.maven.org/maven2/org/springframework/boot/spring-boot-dependencies/%s"
+                    + "/spring-boot-dependencies-%s.pom) from %s", latestSpringBootVersion, latestSpringBootVersion,
+                    latestSpringBootVersion, azureSupportedVersion));
+                bufferedWriter.newLine();
+                bufferedWriter.write("<details>");
+                bufferedWriter.newLine();
+                bufferedWriter.write("<summary>Release notes</summary>");
+                bufferedWriter.newLine();
+                bufferedWriter.write(String.format("<p><em>Sourced from <a href='https://github"
+                    + ".com/spring-projects/spring-boot/releases/tag/v{}'>spring-boot releases</a>.</em></p>",
+                    latestSpringBootVersion));
+                bufferedWriter.newLine();
+                bufferedWriter.write(releaseNotesContents);
+                bufferedWriter.newLine();
+                bufferedWriter.write("</details>");
+                bufferedWriter.newLine();
+                bufferedWriter.newLine();
             }
         }
     }

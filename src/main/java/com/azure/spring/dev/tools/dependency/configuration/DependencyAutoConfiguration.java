@@ -1,5 +1,6 @@
 package com.azure.spring.dev.tools.dependency.configuration;
 
+import com.azure.spring.dev.tools.dependency.support.SpringBootReleaseNotesReader;
 import com.azure.spring.dev.tools.dependency.support.SpringCloudAzureCurrentVersionReader;
 import com.azure.spring.dev.tools.dependency.support.SpringCloudAzureSupportMetadataReader;
 import com.azure.spring.dev.tools.dependency.support.SpringInitializrMetadataReader;
@@ -47,6 +48,11 @@ public class DependencyAutoConfiguration {
     public SpringCloudAzureCurrentVersionReader springCloudAzureCurrentVersionReader(RestTemplate restTemplate,
                                                                                      DependencyProperties properties) {
         return new SpringCloudAzureCurrentVersionReader(restTemplate, properties);
+    }
+
+    @Bean
+    public SpringBootReleaseNotesReader springBootReleaseNotesReader(DependencyProperties properties) {
+        return new SpringBootReleaseNotesReader(properties);
     }
 
 }

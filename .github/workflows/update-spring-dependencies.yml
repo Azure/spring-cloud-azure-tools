@@ -32,6 +32,7 @@ jobs:
               echo "spring_boot_version=$(sed -n '1p' spring-versions.txt)" >> $GITHUB_ENV
               echo "spring_cloud_version=$(sed -n '2p' spring-versions.txt)" >> $GITHUB_ENV
               echo "last_spring_boot_version=$(sed -n '3p' spring-versions.txt)" >> $GITHUB_ENV
+              echo "pr_descriptions=$(cat pr-descriptions.txt)" >> $GITHUB_ENV
             else
               echo "No new Spring Boot version, No updates!"
             fi
@@ -81,7 +82,7 @@ jobs:
           git config --global user.name github-actions
           git rm ./sdk/spring/scripts/spring_boot_${{ env.last_spring_boot_version }}_managed_external_dependencies.txt
           git add -A
-          git commit -m "Update Spring Dependencies. This commit is created by GitHub Action: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
+          git commit -m "Upgrade external dependencies to align with Spring Boot ${{ env.spring_boot_version }}"
           git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git"
       - name: Create Pull Request
         if: ${{ env.need_update_version == 'true' }}
@@ -89,8 +90,8 @@ jobs:
         env:
           PULL_REQUEST_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           PULL_REQUEST_REPOSITORY: Azure/azure-sdk-for-java
-          PULL_REQUEST_TITLE: "Update Spring Dependencies to align with Spring Boot ${{ env.spring_boot_version }}"
+          PULL_REQUEST_TITLE: "External dependencies upgrade - Spring Boot ${{ env.spring_boot_version }} and Spring Cloud ${{ env.spring_cloud_version }}"
           PULL_REQUEST_FROM_BRANCH: "${{ secrets.USER }}:update-spring-dependencies"
           PULL_REQUEST_BRANCH: "main"
-          PULL_REQUEST_BODY: "Update Spring Dependencies to align with Spring Boot ${{ env.spring_boot_version }}. This PR is created by GitHub Actions: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
+          PULL_REQUEST_BODY: "${{ env.pr_descriptions }}This PR is created by GitHub Actions: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
           PULL_REQUEST_DRAFT: true
