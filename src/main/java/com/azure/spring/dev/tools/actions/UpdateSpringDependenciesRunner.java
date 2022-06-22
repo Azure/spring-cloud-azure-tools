@@ -65,24 +65,24 @@ public class UpdateSpringDependenciesRunner implements CommandLineRunner {
                 bufferedWriter.write(azureSupportedVersion);
             }
             try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("pr-descriptions.txt"))) {
-                bufferedWriter.write(String.format("Updates external dependencies to align with Spring Boot version "
-                    + "[%s](https://repo1.maven.org/maven2/org/springframework/boot/spring-boot-dependencies/%s"
-                    + "/spring-boot-dependencies-%s.pom) from %s", latestSpringBootVersion, latestSpringBootVersion,
-                    latestSpringBootVersion, azureSupportedVersion));
-                bufferedWriter.newLine();
-                bufferedWriter.write("<details>");
-                bufferedWriter.newLine();
-                bufferedWriter.write("<summary>Release notes</summary>");
-                bufferedWriter.newLine();
-                bufferedWriter.write(String.format("<p><em>Sourced from <a href='https://github"
-                    + ".com/spring-projects/spring-boot/releases/tag/v{}'>spring-boot releases</a>.</em></p>",
-                    latestSpringBootVersion));
-                bufferedWriter.newLine();
+//                bufferedWriter.write(String.format("Updates external dependencies to align with Spring Boot version "
+//                    + "[%s](https://repo1.maven.org/maven2/org/springframework/boot/spring-boot-dependencies/%s"
+//                    + "/spring-boot-dependencies-%s.pom) from %s", latestSpringBootVersion, latestSpringBootVersion,
+//                    latestSpringBootVersion, azureSupportedVersion));
+//                bufferedWriter.newLine();
+//                bufferedWriter.write("<details>");
+//                bufferedWriter.newLine();
+//                bufferedWriter.write("<summary>Release notes</summary>");
+//                bufferedWriter.newLine();
+//                bufferedWriter.write(String.format("<p><em>Sourced from <a href='https://github"
+//                    + ".com/spring-projects/spring-boot/releases/tag/v{}'>spring-boot releases</a>.</em></p>",
+//                    latestSpringBootVersion));
+//                bufferedWriter.newLine();
                 bufferedWriter.write(releaseNotesContents);
-                bufferedWriter.newLine();
-                bufferedWriter.write("</details>");
-                bufferedWriter.newLine();
-                bufferedWriter.newLine();
+//                bufferedWriter.newLine();
+//                bufferedWriter.write("</details>");
+//                bufferedWriter.newLine();
+//                bufferedWriter.newLine();
             }
         }
     }
