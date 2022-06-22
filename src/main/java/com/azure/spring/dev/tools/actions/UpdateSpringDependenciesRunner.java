@@ -18,11 +18,10 @@ import java.util.Map;
 
 /**
  * This Runner is used to get versions of Spring Boot and Spring Cloud for updating spring dependencies in sdk repo and
- * releaseNotes of Spring Boot fot Pr description.
- * It will output two files "spring-versions.txt" and "pr-descriptions.txt".
- * "spring-versions.txt" contains three versions $latest_spring_boot_version, $latest_spring_cloud_version and
- * $current_azure_supported_spring_boot_version.
- * "pr-descriptions.txt" contains Spring Boot releaseNotes' information.
+ * releaseNotes of Spring Boot fot Pr description. It will output two files "spring-versions.txt" and
+ * "pr-descriptions.txt". "spring-versions.txt" contains three versions $latest_spring_boot_version,
+ * $latest_spring_cloud_version and $current_azure_supported_spring_boot_version. "pr-descriptions.txt" contains Spring
+ * Boot releaseNotes' information.
  */
 @ConditionalOnProperty("update-spring-dependencies")
 @Component
@@ -65,24 +64,11 @@ public class UpdateSpringDependenciesRunner implements CommandLineRunner {
                 bufferedWriter.write(azureSupportedVersion);
             }
             try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("pr-descriptions.txt"))) {
-//                bufferedWriter.write(String.format("Updates external dependencies to align with Spring Boot version "
-//                    + "[%s](https://repo1.maven.org/maven2/org/springframework/boot/spring-boot-dependencies/%s"
-//                    + "/spring-boot-dependencies-%s.pom) from %s", latestSpringBootVersion, latestSpringBootVersion,
-//                    latestSpringBootVersion, azureSupportedVersion));
-//                bufferedWriter.newLine();
-//                bufferedWriter.write("<details>");
-//                bufferedWriter.newLine();
-//                bufferedWriter.write("<summary>Release notes</summary>");
-//                bufferedWriter.newLine();
-//                bufferedWriter.write(String.format("<p><em>Sourced from <a href='https://github"
-//                    + ".com/spring-projects/spring-boot/releases/tag/v{}'>spring-boot releases</a>.</em></p>",
-//                    latestSpringBootVersion));
-//                bufferedWriter.newLine();
+                bufferedWriter.write(String.format("<details><summary>Release notes</summary><p><em>Sourced from <a "
+                        + "href='https://github.com/spring-projects/spring-boot/releases/tag/v{}'>spring-boot "
+                        + "releases</a>.</em></p>", latestSpringBootVersion));
                 bufferedWriter.write(releaseNotesContents);
-//                bufferedWriter.newLine();
-//                bufferedWriter.write("</details>");
-//                bufferedWriter.newLine();
-//                bufferedWriter.newLine();
+                bufferedWriter.write("</details>");
             }
         }
     }

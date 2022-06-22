@@ -17,6 +17,9 @@ import java.util.concurrent.TimeUnit;
 public class SpringBootReleaseNotesReader {
 
     private final DependencyProperties dependencyProperties;
+    static final String CONTRIBUTORS_INFO = "<h2> <g-emoji class=\"g-emoji\" alias=\"heart\" "
+        + "fallback-src=\"https://github.githubassets.com/images/icons/emoji/unicode/2764.png\">  ❤️ </g-emoji> "
+        + "Contributors.*";
 
     public SpringBootReleaseNotesReader(DependencyProperties dependencyProperties) {
         this.dependencyProperties = dependencyProperties;
@@ -26,7 +29,7 @@ public class SpringBootReleaseNotesReader {
         String url = dependencyProperties.getRelease().getReleaseNotesUrl() + version;
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
             .connectTimeout(10, TimeUnit.SECONDS)
-            .readTimeout(20,TimeUnit.SECONDS)
+            .readTimeout(20, TimeUnit.SECONDS)
             .build();
         Request request = new Request.Builder().url(url).build();
         Call call = okHttpClient.newCall(request);
@@ -43,7 +46,11 @@ public class SpringBootReleaseNotesReader {
             }
         }
         Document doc = Jsoup.parse(htmlContents);
-        return doc.getElementsByClass("markdown-body my-3").toString();
+        String releaseNotes = doc.getElementsByClass("markdown-body my-3").html();
+        return releaseNotes.replaceAll("\n", "")
+                           .replaceAll(CONTRIBUTORS_INFO, "")
+                           .replaceAll("<h2>", "<h4>")
+                           .replaceAll("</h2>", "</h4>");
     }
 
 }
