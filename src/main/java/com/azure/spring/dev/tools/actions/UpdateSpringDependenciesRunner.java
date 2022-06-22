@@ -65,7 +65,7 @@ public class UpdateSpringDependenciesRunner implements CommandLineRunner {
             }
             try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("pr-descriptions.txt"))) {
                 bufferedWriter.write(String.format("<details><summary>Release notes</summary><p><em>Sourced from <a "
-                        + "href='https://github.com/spring-projects/spring-boot/releases/tag/v{}'>spring-boot "
+                        + "href='https://github.com/spring-projects/spring-boot/releases/tag/v%s'>spring-boot "
                         + "releases</a>.</em></p>", latestSpringBootVersion));
                 bufferedWriter.write(releaseNotesContents);
                 bufferedWriter.write("</details>");
