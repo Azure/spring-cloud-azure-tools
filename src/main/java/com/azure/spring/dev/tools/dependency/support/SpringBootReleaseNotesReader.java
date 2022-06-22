@@ -1,27 +1,22 @@
 package com.azure.spring.dev.tools.dependency.support;
 
 import com.azure.spring.dev.tools.dependency.configuration.DependencyProperties;
-import okhttp3.Call;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-
-import java.io.IOException;
-import java.net.ConnectException;
-import java.net.SocketTimeoutException;
-import java.util.concurrent.TimeUnit;
+import org.springframework.web.client.RestTemplate;
 
 
 public class SpringBootReleaseNotesReader {
 
+    private final RestTemplate restTemplate;
     private final DependencyProperties dependencyProperties;
     static final String CONTRIBUTORS_INFO = "<h2> <g-emoji class=\"g-emoji\" alias=\"heart\" "
         + "fallback-src=\"https://github.githubassets.com/images/icons/emoji/unicode/2764.png\">  ❤️ </g-emoji> "
         + "Contributors.*";
 
-    public SpringBootReleaseNotesReader(DependencyProperties dependencyProperties) {
+    public SpringBootReleaseNotesReader(RestTemplate restTemplate,
+                                        DependencyProperties dependencyProperties) {
+        this.restTemplate = restTemplate;
         this.dependencyProperties = dependencyProperties;
     }
 
@@ -31,30 +26,16 @@ public class SpringBootReleaseNotesReader {
 
     public String getReleaseNotes(String version) {
         String url = getUrl(version);
-        OkHttpClient okHttpClient = new OkHttpClient.Builder()
-            .connectTimeout(10, TimeUnit.SECONDS)
-            .readTimeout(20, TimeUnit.SECONDS)
-            .build();
-        Request request = new Request.Builder().url(url).build();
-        Call call = okHttpClient.newCall(request);
-        String htmlContents = null;
-        try {
-            Response response = call.execute();
-            htmlContents = response.body().string();
-        } catch (IOException e) {
-            if (e instanceof SocketTimeoutException) {
-                throw new IllegalStateException("Timed out");
-            }
-            if (e instanceof ConnectException) {
-                throw new IllegalStateException("Failed to connection");
-            }
-        }
+        String htmlContents = restTemplate.getForObject(url, String.class);
         Document doc = Jsoup.parse(htmlContents);
         String releaseNotes = doc.getElementsByClass("markdown-body my-3").html();
-        return releaseNotes.replaceAll("\n", "")
-                           .replaceAll(CONTRIBUTORS_INFO, "")
-                           .replaceAll("<h2>", "<h4>")
-                           .replaceAll("</h2>", "</h4>");
+        releaseNotes = releaseNotes.replaceAll("\n", "")
+                                   .replaceAll(CONTRIBUTORS_INFO, "")
+                                   .replaceAll("<h2>", "<h4>")
+                                   .replaceAll("</h2>", "</h4>");
+        String finalContents = String.format("<details><summary>Release notes</summary><p><em>Sourced from <a "
+            + "href='%s'>spring-boot releases</a>.</em></p>", url) + releaseNotes + "</details>";
+        return finalContents;
     }
 
 }

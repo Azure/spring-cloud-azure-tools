@@ -27,7 +27,7 @@ public class DependencyAutoConfiguration {
 
     @Bean
     public SpringProjectMetadataReader springBootReleaseMetadataReader(RestTemplate restTemplate,
-                                                                       DependencyProperties properties)  {
+                                                                       DependencyProperties properties) {
         return new SpringProjectMetadataReader(restTemplate, properties);
     }
 
@@ -51,8 +51,9 @@ public class DependencyAutoConfiguration {
     }
 
     @Bean
-    public SpringBootReleaseNotesReader springBootReleaseNotesReader(DependencyProperties properties) {
-        return new SpringBootReleaseNotesReader(properties);
+    public SpringBootReleaseNotesReader springBootReleaseNotesReader(RestTemplate restTemplate,
+                                                                     DependencyProperties properties) {
+        return new SpringBootReleaseNotesReader(restTemplate, properties);
     }
 
 }
