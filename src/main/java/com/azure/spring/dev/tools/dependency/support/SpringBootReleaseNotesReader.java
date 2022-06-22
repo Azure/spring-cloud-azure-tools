@@ -25,8 +25,12 @@ public class SpringBootReleaseNotesReader {
         this.dependencyProperties = dependencyProperties;
     }
 
+    public String getUrl(String version) {
+        return dependencyProperties.getRelease().getReleaseNotesUrl() + version;
+    }
+
     public String getReleaseNotes(String version) {
-        String url = dependencyProperties.getRelease().getReleaseNotesUrl() + version;
+        String url = getUrl(version);
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
             .connectTimeout(10, TimeUnit.SECONDS)
             .readTimeout(20, TimeUnit.SECONDS)

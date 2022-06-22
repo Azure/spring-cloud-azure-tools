@@ -49,6 +49,7 @@ public class UpdateSpringDependenciesRunner implements CommandLineRunner {
         String latestSpringBootVersion = metadataReader.getCurrentVersion();
         String azureSupportedVersion = azureCurrentVersionReader.getCurrentSupportedSpringBootVersion();
         String releaseNotesContents = springBootReleaseNotesReader.getReleaseNotes(latestSpringBootVersion);
+        String releaseNotesUrl = springBootReleaseNotesReader.getUrl(latestSpringBootVersion);
         if (!azureSupportedVersion.equals(latestSpringBootVersion)) {
             try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("spring-versions.txt"))) {
                 bufferedWriter.write(latestSpringBootVersion);
@@ -65,8 +66,7 @@ public class UpdateSpringDependenciesRunner implements CommandLineRunner {
             }
             try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("pr-descriptions.txt"))) {
                 bufferedWriter.write(String.format("<details><summary>Release notes</summary><p><em>Sourced from <a "
-                        + "href='https://github.com/spring-projects/spring-boot/releases/tag/v%s'>spring-boot "
-                        + "releases</a>.</em></p>", latestSpringBootVersion));
+                    + "href='%s'>spring-boot releases</a>.</em></p>", releaseNotesUrl));
                 bufferedWriter.write(releaseNotesContents);
                 bufferedWriter.write("</details>");
             }
