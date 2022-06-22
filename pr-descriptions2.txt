@@ -1,0 +1,97 @@
+<div data-pjax="true" data-test-selector="body-content" data-view-component="true" class="markdown-body my-3">
+<h2>
+<g-emoji class="g-emoji" alias="star" fallback-src="https://github.githubassets.com/images/icons/emoji/unicode/2b50.png">
+⭐
+</g-emoji> New Features</h2>
+<ul>
+<li>Revert to using "application/json" as default MIME type for GraphQL while remaining compatible with "application/graphql+json" <a href="https://github.com/spring-projects/spring-boot/issues/30860" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30860/hovercard">#30860</a></li>
+<li>Allow customization of single logout in auto-configured SAML relying party registration <a href="https://github.com/spring-projects/spring-boot/issues/30128" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30128/hovercard">#30128</a></li>
+</ul>
+<h2>
+<g-emoji class="g-emoji" alias="lady_beetle" fallback-src="https://github.githubassets.com/images/icons/emoji/unicode/1f41e.png">
+🐞
+</g-emoji> Bug Fixes</h2>
+<ul>
+<li>Default properties configured on SpringApplication have higher precedence than properties configured with <code>@PropertySource</code> <a href="https://github.com/spring-projects/spring-boot/issues/31093" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/31093/hovercard">#31093</a></li>
+<li>A failure when an instrumented WebClient records metrics causes the request to fail <a href="https://github.com/spring-projects/spring-boot/issues/31089" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/31089/hovercard">#31089</a></li>
+<li>Dependency management for Artemis is incomplete <a href="https://github.com/spring-projects/spring-boot/issues/31079" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/31079/hovercard">#31079</a></li>
+<li>Configuration properties for Statsd's buffered and step properties are missing <a href="https://github.com/spring-projects/spring-boot/issues/31059" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/31059/hovercard">#31059</a></li>
+<li>Debug logging for requests to WebFlux-based Actuator endpoints does not identify the endpoint <a href="https://github.com/spring-projects/spring-boot/issues/30887" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30887/hovercard">#30887</a></li>
+<li><code>@ConditionalOnProperty</code> meta annotation with <code>@AliasFor</code> does not work <a href="https://github.com/spring-projects/spring-boot/issues/30874" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30874/hovercard">#30874</a></li>
+<li>Event handling in JobExecutionExitCodeGenerator is not thread-safe <a href="https://github.com/spring-projects/spring-boot/issues/30846" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30846/hovercard">#30846</a></li>
+<li>Hibernate service loading logs HHH000505 warnings for ServiceConfigurationError with Gradle-built jars since 2.5.10 when using Java 11 or later <a href="https://github.com/spring-projects/spring-boot/issues/30791" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30791/hovercard">#30791</a></li>
+<li>Cryptic startup failure with bare LOGGING_LEVEL environment variable <a href="https://github.com/spring-projects/spring-boot/issues/30789" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30789/hovercard">#30789</a></li>
+<li>SearchStrategy argument of MethodValidationExcludeFilter byAnnotation(Class, SearchStrategy) is not used <a href="https://github.com/spring-projects/spring-boot/issues/30787" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30787/hovercard">#30787</a></li>
+<li>spring.security.saml2.relyingparty.registration.<em>.asserting-party.</em> properties contain unwanted hyphen in asserting-party <a href="https://github.com/spring-projects/spring-boot/issues/30785" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30785/hovercard">#30785</a></li>
+<li>DevTools sets deprecated spring.mustache.cache property <a href="https://github.com/spring-projects/spring-boot/pull/30774" data-hovercard-type="pull_request" data-hovercard-url="/spring-projects/spring-boot/pull/30774/hovercard">#30774</a></li>
+</ul>
+<h2>
+<g-emoji class="g-emoji" alias="notebook_with_decorative_cover" fallback-src="https://github.githubassets.com/images/icons/emoji/unicode/1f4d4.png">
+📔
+</g-emoji> Documentation</h2>
+<ul>
+<li>Extend documentation on Datadog metrics <a href="https://github.com/spring-projects/spring-boot/issues/30997" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30997/hovercard">#30997</a></li>
+<li>Fix link to Upgrading From 1.x in multi-page documentation <a href="https://github.com/spring-projects/spring-boot/issues/30995" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30995/hovercard">#30995</a></li>
+<li>Document support for Java 18 <a href="https://github.com/spring-projects/spring-boot/issues/30782" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30782/hovercard">#30782</a></li>
+</ul>
+<h2>
+<g-emoji class="g-emoji" alias="hammer" fallback-src="https://github.githubassets.com/images/icons/emoji/unicode/1f528.png">
+🔨
+</g-emoji> Dependency Upgrades</h2>
+<ul>
+<li>Upgrade to ActiveMQ 5.16.5 <a href="https://github.com/spring-projects/spring-boot/issues/30927" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30927/hovercard">#30927</a></li>
+<li>Upgrade to Byte Buddy 1.12.10 <a href="https://github.com/spring-projects/spring-boot/issues/30928" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30928/hovercard">#30928</a></li>
+<li>Upgrade to Cassandra Driver 4.14.1 <a href="https://github.com/spring-projects/spring-boot/issues/30929" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30929/hovercard">#30929</a></li>
+<li>Upgrade to Couchbase Client 3.2.7 <a href="https://github.com/spring-projects/spring-boot/issues/30930" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30930/hovercard">#30930</a></li>
+<li>Upgrade to Couchbase Client 3.3.0 <a href="https://github.com/spring-projects/spring-boot/issues/31031" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/31031/hovercard">#31031</a></li>
+<li>Upgrade to Elasticsearch 7.17.3 <a href="https://github.com/spring-projects/spring-boot/issues/30931" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30931/hovercard">#30931</a></li>
+<li>Upgrade to Flyway 8.5.11 <a href="https://github.com/spring-projects/spring-boot/issues/31080" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/31080/hovercard">#31080</a></li>
+<li>Upgrade to GraphQL Java 18.1 <a href="https://github.com/spring-projects/spring-boot/issues/30859" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30859/hovercard">#30859</a></li>
+<li>Upgrade to Hibernate 5.6.9.Final <a href="https://github.com/spring-projects/spring-boot/issues/31081" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/31081/hovercard">#31081</a></li>
+<li>Upgrade to Infinispan 13.0.10.Final <a href="https://github.com/spring-projects/spring-boot/issues/30933" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30933/hovercard">#30933</a></li>
+<li>Upgrade to Jackson Bom 2.13.3 <a href="https://github.com/spring-projects/spring-boot/issues/31046" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/31046/hovercard">#31046</a></li>
+<li>Upgrade to Jaybird 4.0.6.java8 <a href="https://github.com/spring-projects/spring-boot/issues/30934" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30934/hovercard">#30934</a></li>
+<li>Upgrade to Johnzon 1.2.18 <a href="https://github.com/spring-projects/spring-boot/issues/30935" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30935/hovercard">#30935</a></li>
+<li>Upgrade to Kafka 3.1.1 <a href="https://github.com/spring-projects/spring-boot/issues/31047" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/31047/hovercard">#31047</a></li>
+<li>Upgrade to Micrometer 1.9.0 <a href="https://github.com/spring-projects/spring-boot/issues/31013" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/31013/hovercard">#31013</a></li>
+<li>Upgrade to Mockito 4.5.1 <a href="https://github.com/spring-projects/spring-boot/issues/30936" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30936/hovercard">#30936</a></li>
+<li>Upgrade to MSSQL JDBC 10.2.1.jre8 <a href="https://github.com/spring-projects/spring-boot/issues/31048" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/31048/hovercard">#31048</a></li>
+<li>Upgrade to MySQL 8.0.29 <a href="https://github.com/spring-projects/spring-boot/issues/30937" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30937/hovercard">#30937</a></li>
+<li>Upgrade to Netty 4.1.77.Final <a href="https://github.com/spring-projects/spring-boot/issues/30938" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30938/hovercard">#30938</a></li>
+<li>Upgrade to Postgresql 42.3.5 <a href="https://github.com/spring-projects/spring-boot/issues/30939" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30939/hovercard">#30939</a></li>
+<li>Upgrade to Reactor Bom 2020.0.19 <a href="https://github.com/spring-projects/spring-boot/issues/30940" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30940/hovercard">#30940</a></li>
+<li>Upgrade to Selenium 4.1.4 <a href="https://github.com/spring-projects/spring-boot/issues/30941" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30941/hovercard">#30941</a></li>
+<li>Upgrade to Selenium HtmlUnit 3.61.0 <a href="https://github.com/spring-projects/spring-boot/issues/30855" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30855/hovercard">#30855</a></li>
+<li>Upgrade to SendGrid 4.9.2 <a href="https://github.com/spring-projects/spring-boot/issues/31116" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/31116/hovercard">#31116</a></li>
+<li>Upgrade to Spring AMQP 2.4.5 <a href="https://github.com/spring-projects/spring-boot/issues/31022" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/31022/hovercard">#31022</a></li>
+<li>Upgrade to Spring Batch 4.3.6 <a href="https://github.com/spring-projects/spring-boot/issues/31020" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/31020/hovercard">#31020</a></li>
+<li>Upgrade to Spring Data 2021.2.0 <a href="https://github.com/spring-projects/spring-boot/issues/31015" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/31015/hovercard">#31015</a></li>
+<li>Upgrade to Spring for GraphQL 1.0.0 <a href="https://github.com/spring-projects/spring-boot/issues/30858" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30858/hovercard">#30858</a></li>
+<li>Upgrade to Spring Framework 5.3.20 <a href="https://github.com/spring-projects/spring-boot/issues/31014" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/31014/hovercard">#31014</a></li>
+<li>Upgrade to Spring HATEOAS 1.5.0 <a href="https://github.com/spring-projects/spring-boot/issues/31016" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/31016/hovercard">#31016</a></li>
+<li>Upgrade to Spring Integration 5.5.12 <a href="https://github.com/spring-projects/spring-boot/issues/31062" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/31062/hovercard">#31062</a></li>
+<li>Upgrade to Spring Kafka 2.8.6 <a href="https://github.com/spring-projects/spring-boot/issues/31018" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/31018/hovercard">#31018</a></li>
+<li>Upgrade to Spring LDAP 2.4.0 <a href="https://github.com/spring-projects/spring-boot/issues/31017" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/31017/hovercard">#31017</a></li>
+<li>Upgrade to Spring Security 5.7.1 <a href="https://github.com/spring-projects/spring-boot/issues/31100" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/31100/hovercard">#31100</a></li>
+<li>Upgrade to Spring Session Bom 2021.2.0 <a href="https://github.com/spring-projects/spring-boot/issues/31021" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/31021/hovercard">#31021</a></li>
+<li>Upgrade to Tomcat 9.0.63 <a href="https://github.com/spring-projects/spring-boot/issues/31082" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/31082/hovercard">#31082</a></li>
+<li>Upgrade to UnboundID LDAPSDK 6.0.5 <a href="https://github.com/spring-projects/spring-boot/issues/30942" data-hovercard-type="issue" data-hovercard-url="/spring-projects/spring-boot/issues/30942/hovercard">#30942</a></li>
+</ul>
+<h2>
+<g-emoji class="g-emoji" alias="heart" fallback-src="https://github.githubassets.com/images/icons/emoji/unicode/2764.png">
+❤️
+</g-emoji> Contributors</h2>
+<p>We'd like to thank all the contributors who worked on this release!</p>
+<ul>
+<li><a href="https://github.com/izeye">@izeye</a></li>
+<li><a href="https://github.com/luojianet">@luojianet</a></li>
+<li><a href="https://github.com/marcwrobel">@marcwrobel</a></li>
+<li><a href="https://github.com/eddumelendez">@eddumelendez</a></li>
+<li><a href="https://github.com/mmoayyed">@mmoayyed</a></li>
+<li><a href="https://github.com/ssobue">@ssobue</a></li>
+<li><a href="https://github.com/christophejan">@christophejan</a></li>
+<li><a href="https://github.com/dugenkui03">@dugenkui03</a></li>
+<li><a href="https://github.com/denisw">@denisw</a></li>
+<li><a href="https://github.com/terminux">@terminux</a></li>
+</ul>
+</div>
