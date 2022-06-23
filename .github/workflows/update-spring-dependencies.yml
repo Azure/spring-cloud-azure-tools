@@ -32,6 +32,7 @@ jobs:
               echo "spring_boot_version=$(sed -n '1p' spring-versions.txt)" >> $GITHUB_ENV
               echo "spring_cloud_version=$(sed -n '2p' spring-versions.txt)" >> $GITHUB_ENV
               echo "last_spring_boot_version=$(sed -n '3p' spring-versions.txt)" >> $GITHUB_ENV
+              echo "last_spring_cloud_version=$(sed -n '4p' spring-versions.txt)" >> $GITHUB_ENV
               echo "pr_descriptions=$(cat pr-descriptions.txt)" >> $GITHUB_ENV
             else
               echo "No new Spring Boot version, No updates!"
@@ -93,5 +94,5 @@ jobs:
           PULL_REQUEST_TITLE: "External dependencies upgrade - Spring Boot ${{ env.spring_boot_version }} and Spring Cloud ${{ env.spring_cloud_version }}"
           PULL_REQUEST_FROM_BRANCH: "${{ secrets.USER }}:update-spring-dependencies"
           PULL_REQUEST_BRANCH: "main"
-          PULL_REQUEST_BODY: "Updates external dependencies to align with Spring Boot version [${{ env.spring_boot_version }}](https://repo1.maven.org/maven2/org/springframework/boot/spring-boot-dependencies/${{ env.spring_boot_version }}/spring-boot-dependencies-${{ env.spring_boot_version }}.pom) from ${{ env.last_spring_boot_version }}.\n${{ env.pr_descriptions }}\n\nThis PR is created by GitHub Actions: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
+          PULL_REQUEST_BODY: "Updates external dependencies to align with Spring Boot version [${{ env.spring_boot_version }}](https://repo1.maven.org/maven2/org/springframework/boot/spring-boot-dependencies/${{ env.spring_boot_version }}/spring-boot-dependencies-${{ env.spring_boot_version }}.pom) from [${{ ${{ env.last_spring_boot_version }} }}](https://repo1.maven.org/maven2/org/springframework/boot/spring-boot-dependencies/${{ ${{ env.last_spring_boot_version }} }}/spring-boot-dependencies-${{ ${{ env.last_spring_boot_version }} }}.pom) and Spring Cloud version [${{ env.spring_cloud_version }}](https://repo1.maven.org/maven2/org/springframework/cloud/spring-cloud-dependencies/${{ env.spring_cloud_version }}/spring-cloud-dependencies-${{ env.spring_cloud_version }}.pom) from [${{ env.last_spring_cloud_version }}](https://repo1.maven.org/maven2/org/springframework/cloud/spring-cloud-dependencies/${{ env.last_spring_cloud_version }}/spring-cloud-dependencies-${{ env.last_spring_cloud_version }}.pom).\n${{ env.pr_descriptions }}\n\nThis PR is created by GitHub Actions: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
           PULL_REQUEST_DRAFT: true
