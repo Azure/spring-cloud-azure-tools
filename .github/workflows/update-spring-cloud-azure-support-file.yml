@@ -24,14 +24,13 @@ jobs:
           token: ${{ secrets.ACCESS_TOKEN }}
           fetch-depth: 0
       - name: Make Decision Based on Git Diff and Branch Status
-        id: make_decision_based_on_git_diff_and_branch_status
         run: |
           if [[ $(git ls-remote --heads ${{ secrets.BRANCH_REPO }} update-spring-cloud-azure-support-file | wc -l) -eq 0 ]]; then
             cd azure-sdk-for-java
             git checkout -b update-spring-cloud-azure-support-file
             cp -f ../spring-cloud-azure-supported-spring.json sdk/spring
             if [[ -n "$(git status -s)" ]]; then
-              echo '::set-output name=updated_version::true'
+              echo "need_update_file=true" >> $GITHUB_ENV
             else
               echo "No file changes, no commits."
             fi
@@ -39,7 +38,7 @@ jobs:
             echo "Branch exists, cancel commit"
           fi
       - name: Push Commit
-        if: ${{ steps.make_decision_based_on_git_diff_and_branch_status.outputs.updated_version == 'true' }}
+        if: ${{ env.need_update_file == 'true' }}
         run: |
           cd azure-sdk-for-java
           git config --global user.email github-actions@github.com
@@ -48,7 +47,7 @@ jobs:
           git commit -m "Update Spring Boot and Spring Cloud versions for the compatibility test. This commit is created by GitHub Action: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
           git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git"
       - name: Create Pull Request
-        if: ${{ steps.make_decision_based_on_git_diff_and_branch_status.outputs.updated_version == 'true' }}
+        if: ${{ env.need_update_file == 'true' }}
         uses: vsoch/pull-request-action@master
         env:
           PULL_REQUEST_TOKEN: ${{ secrets.ACCESS_TOKEN }}

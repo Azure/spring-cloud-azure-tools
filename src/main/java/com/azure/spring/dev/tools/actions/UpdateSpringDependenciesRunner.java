@@ -2,6 +2,7 @@ package com.azure.spring.dev.tools.actions;
 
 import com.azure.spring.dev.tools.dependency.metadata.maven.Version;
 import com.azure.spring.dev.tools.dependency.metadata.maven.VersionRange;
+import com.azure.spring.dev.tools.dependency.support.SpringBootReleaseNotesReader;
 import com.azure.spring.dev.tools.dependency.support.SpringCloudAzureCurrentVersionReader;
 import com.azure.spring.dev.tools.dependency.support.SpringInitializrMetadataReader;
 import com.azure.spring.dev.tools.dependency.support.SpringProjectMetadataReader;
@@ -16,11 +17,11 @@ import java.io.FileWriter;
 import java.util.Map;
 
 /**
- * This Runner is used to get versions of Spring Boot and Spring Cloud for updating spring dependencies in sdk repo.
- * It will output a "spring-versions.txt" file with
- * $latest_spring_boot_version
- * $latest_spring_cloud_version
- * $current_azure_supported_spring_boot_version
+ * This Runner is used to get versions of Spring Boot and Spring Cloud for updating spring dependencies in sdk repo and
+ * releaseNotes of Spring Boot fot PR description. It will output two files "spring-versions.txt" and
+ * "pr-descriptions.txt". "spring-versions.txt" contains three versions $latest_spring_boot_version,
+ * $latest_spring_cloud_version and $current_azure_supported_spring_boot_version. "pr-descriptions.txt" contains Spring
+ * Boot releaseNotes' information.
  */
 @ConditionalOnProperty("update-spring-dependencies")
 @Component
@@ -29,22 +30,27 @@ public class UpdateSpringDependenciesRunner implements CommandLineRunner {
     private final SpringProjectMetadataReader metadataReader;
     private final Map<String, VersionRange> springCloudCompatibleSpringBootVersionRanges;
     private final SpringCloudAzureCurrentVersionReader azureCurrentVersionReader;
+    private final SpringBootReleaseNotesReader springBootReleaseNotesReader;
 
     public UpdateSpringDependenciesRunner(SpringProjectMetadataReader metadataReader,
                                           SpringInitializrMetadataReader springInitializrMetadataReader,
-                                          SpringCloudAzureCurrentVersionReader azureCurrentVersionReader) {
+                                          SpringCloudAzureCurrentVersionReader azureCurrentVersionReader,
+                                          SpringBootReleaseNotesReader springBootReleaseNotesReader) {
         this.metadataReader = metadataReader;
         this.azureCurrentVersionReader = azureCurrentVersionReader;
         this.springCloudCompatibleSpringBootVersionRanges =
             springInitializrMetadataReader.getCompatibleSpringBootVersions("spring-cloud");
+        this.springBootReleaseNotesReader = springBootReleaseNotesReader;
     }
 
     @Override
     public void run(String... args) throws Exception {
         LOGGER.info("---------- starting {} ----------", UpdateSpringDependenciesRunner.class.getSimpleName());
         String latestSpringBootVersion = metadataReader.getCurrentVersion();
-        String azureSupportedVersion = azureCurrentVersionReader.getCurrentSupportedSpringBootVersion();
-        if (!azureSupportedVersion.equals(latestSpringBootVersion)) {
+        String azureSupportedSpringBootVersion = azureCurrentVersionReader.getCurrentSupportedSpringBootVersion();
+        String azureSupportedSpringCloudVersion = azureCurrentVersionReader.getCurrentSupportedSpringCloudVersion();
+        String releaseNotesContents = springBootReleaseNotesReader.getReleaseNotes(latestSpringBootVersion);
+        if (!azureSupportedSpringBootVersion.equals(latestSpringBootVersion)) {
             try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("spring-versions.txt"))) {
                 bufferedWriter.write(latestSpringBootVersion);
                 bufferedWriter.newLine();
@@ -56,7 +62,11 @@ public class UpdateSpringDependenciesRunner implements CommandLineRunner {
                     .findFirst()
                     .get());
                 bufferedWriter.newLine();
-                bufferedWriter.write(azureSupportedVersion);
+                bufferedWriter.write(azureSupportedSpringBootVersion);
+                bufferedWriter.write(azureSupportedSpringCloudVersion);
+            }
+            try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("pr-descriptions.txt"))) {
+                bufferedWriter.write(releaseNotesContents);
             }
         }
     }
