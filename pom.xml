@@ -19,7 +19,7 @@
     <maven-resolver.version>1.7.3</maven-resolver.version>
     <initializr-version-resolver.version>0.12.0</initializr-version-resolver.version>
     <maven-builder-support.version>3.8.4</maven-builder-support.version>
-    <jsoup.version>1.13.1</jsoup.version>
+    <jsoup.version>1.14.2</jsoup.version>
   </properties>
   <dependencies>
     <dependency>
