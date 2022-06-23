@@ -18,7 +18,7 @@ import java.util.Map;
 
 /**
  * This Runner is used to get versions of Spring Boot and Spring Cloud for updating spring dependencies in sdk repo and
- * releaseNotes of Spring Boot fot Pr description. It will output two files "spring-versions.txt" and
+ * releaseNotes of Spring Boot fot PR description. It will output two files "spring-versions.txt" and
  * "pr-descriptions.txt". "spring-versions.txt" contains three versions $latest_spring_boot_version,
  * $latest_spring_cloud_version and $current_azure_supported_spring_boot_version. "pr-descriptions.txt" contains Spring
  * Boot releaseNotes' information.
