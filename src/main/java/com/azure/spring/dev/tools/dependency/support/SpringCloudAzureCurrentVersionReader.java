@@ -13,17 +13,18 @@ import java.util.regex.Pattern;
  */
 public class SpringCloudAzureCurrentVersionReader {
 
+    static final Pattern SPRING_BOOT_DEPENDENCIES_PATTERN =
+        Pattern.compile("(org.springframework.boot:spring-boot-dependencies;)(\\d+.\\d+.\\d+[.\\-\\w]*)");
+    static final Pattern SPRING_CLOUD_DEPENDENCIES_PATTERN =
+        Pattern.compile("(org.springframework.cloud:spring-cloud-dependencies;)(\\d+.\\d+\\d+[.\\-\\w]*|\\w+.\\w+)");
     private final RestTemplate restTemplate;
-    private final DependencyProperties dependencyProperties;
-    static final Pattern SPRING_BOOT_DEPENDENCIES =
-        Pattern.compile("(org.springframework.boot:spring-boot-dependencies;)(\\d+.+\\d+\\W[A-Z]*)");
-    static final Pattern SPRING_CLOUD_DEPENDENCIES =
-        Pattern.compile("(org.springframework.cloud:spring-cloud-dependencies;)(\\d+.+\\d+\\W[A-Z]*)");
+    private final String externalDependenciesFileUrl;
+    private String externalDependenciesFileContent;
 
     public SpringCloudAzureCurrentVersionReader(RestTemplate restTemplate,
                                                 DependencyProperties dependencyProperties) {
         this.restTemplate = restTemplate;
-        this.dependencyProperties = dependencyProperties;
+        this.externalDependenciesFileUrl = dependencyProperties.getAzure().getExternalDependenciesFileUrl();
     }
 
     /**
@@ -31,21 +32,7 @@ public class SpringCloudAzureCurrentVersionReader {
      * @return the current Spring Boot Version
      */
     public String getCurrentSupportedSpringBootVersion() {
-        String file = getExternalDependenciesFile();
-        Matcher matcher = SPRING_BOOT_DEPENDENCIES.matcher(file);
-        if (matcher.find()) {
-            return matcher.group(2);
-        }
-        return null;
-    }
-
-    /**
-     * Get file from external-dependencies.txt in Spring Cloud Azure
-     * @return the External Dependencies file information
-     */
-    private String getExternalDependenciesFile() {
-        return this.restTemplate.getForObject(dependencyProperties.getAzure().getExternalDependenciesFileUrl(),
-            String.class);
+        return findMatchedVersion(getExternalDependenciesFileContent(), SPRING_BOOT_DEPENDENCIES_PATTERN, 2);
     }
 
     /**
@@ -53,12 +40,33 @@ public class SpringCloudAzureCurrentVersionReader {
      * @return the current Spring Cloud Version
      */
     public String getCurrentSupportedSpringCloudVersion() {
-        String file = getExternalDependenciesFile();
-        Matcher matcher = SPRING_CLOUD_DEPENDENCIES.matcher(file);
+        return findMatchedVersion(getExternalDependenciesFileContent(), SPRING_CLOUD_DEPENDENCIES_PATTERN, 2);
+    }
+
+    /**
+     * According to the pattern ,return the matched version
+     * @param content external-dependencies.txt
+     * @param pattern Spring Boot or Spring Cloud version pattern
+     * @return the matched version
+     */
+    static String findMatchedVersion(String content, Pattern pattern, int group) {
+        Matcher matcher = pattern.matcher(content);
         if (matcher.find()) {
-            return matcher.group(2);
+            return matcher.group(group);
         }
         return null;
+    }
+
+    /**
+     * Get file content from external-dependencies.txt in Spring Cloud Azure
+     * @return the External Dependencies file information
+     */
+    private String getExternalDependenciesFileContent() {
+        if (this.externalDependenciesFileContent == null) {
+            this.externalDependenciesFileContent = this.restTemplate.getForObject(this.externalDependenciesFileUrl,
+                String.class);
+        }
+        return this.externalDependenciesFileContent;
     }
 
 }
