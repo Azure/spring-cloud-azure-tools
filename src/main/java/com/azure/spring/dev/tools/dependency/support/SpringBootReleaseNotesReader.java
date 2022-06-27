@@ -27,15 +27,18 @@ public class SpringBootReleaseNotesReader {
     public String getReleaseNotes(String version) {
         String url = getUrl(version);
         String htmlContents = restTemplate.getForObject(url, String.class);
+        return convertOutputString(url, htmlContents);
+    }
+
+    String convertOutputString(String url, String htmlContents) {
         Document doc = Jsoup.parse(htmlContents);
         String releaseNotes = doc.getElementsByClass("markdown-body my-3").html();
         releaseNotes = releaseNotes.replaceAll("\n", "")
                                    .replaceAll(CONTRIBUTORS_INFO, "")
                                    .replaceAll("<h2>", "<h4>")
                                    .replaceAll("</h2>", "</h4>");
-        String finalContents = String.format("<details><summary>Release notes</summary><p><em>Sourced from <a "
+        return String.format("<details><summary>Release notes</summary><p><em>Sourced from <a "
             + "href='%s'>spring-boot releases</a>.</em></p>", url) + releaseNotes + "</details>";
-        return finalContents;
     }
 
 }
