@@ -16,14 +16,14 @@ import java.util.List;
 public class SpringCloudAzureSupportMetadataReader {
 
     private final RestTemplate restTemplate;
-    private final DependencyProperties dependencyProperties;
+    private final String supportMetadataUrl;
     private final ObjectMapper objectMapper;
 
     public SpringCloudAzureSupportMetadataReader(RestTemplate restTemplate,
                                                  DependencyProperties dependencyProperties,
                                                  ObjectMapper objectMapper) {
         this.restTemplate = restTemplate;
-        this.dependencyProperties = dependencyProperties;
+        this.supportMetadataUrl = dependencyProperties.getAzure().getSupportMetadataUrl();
         this.objectMapper = objectMapper;
     }
 
@@ -33,7 +33,7 @@ public class SpringCloudAzureSupportMetadataReader {
      */
     public List<SpringCloudAzureSupportMetadata> getAzureSupportMetadata() {
         // Github always return text/plain
-        String response = this.restTemplate.getForObject(dependencyProperties.getAzure().getSupportMetadataUrl(), String.class);
+        String response = this.restTemplate.getForObject(supportMetadataUrl, String.class);
         try {
             return this.objectMapper.readValue(response, new TypeReference<List<SpringCloudAzureSupportMetadata>>() { });
         } catch (JsonProcessingException e) {

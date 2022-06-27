@@ -63,6 +63,7 @@ public class UpdateSpringDependenciesRunner implements CommandLineRunner {
                     .get());
                 bufferedWriter.newLine();
                 bufferedWriter.write(azureSupportedSpringBootVersion);
+                bufferedWriter.newLine();
                 bufferedWriter.write(azureSupportedSpringCloudVersion);
             }
             try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("pr-descriptions.txt"))) {

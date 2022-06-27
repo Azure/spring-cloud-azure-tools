@@ -18,13 +18,13 @@ import java.util.stream.Collectors;
 public class SpringInitializrMetadataReader {
 
     private final RestTemplate restTemplate;
-    private final DependencyProperties properties;
+    private final String actuatorInfoUrl;
     static final Pattern VERSION_RANGE_PATTERN = Pattern.compile("^([><])(=*)(.*)");
 
     public SpringInitializrMetadataReader(RestTemplate restTemplate,
                                           DependencyProperties dependencyProperties) {
         this.restTemplate = restTemplate;
-        this.properties = dependencyProperties;
+        this.actuatorInfoUrl = dependencyProperties.getInitializr().getActuatorInfoUrl();
     }
 
     /**
@@ -34,9 +34,7 @@ public class SpringInitializrMetadataReader {
      * @return The compatibility version between the project bom and Spring Boot versions.
      */
     public Map<String, VersionRange> getCompatibleSpringBootVersions(String projectId) {
-        ActuatorInfoMetadata metadata = restTemplate.getForObject(
-            properties.getInitializr().getActuatorInfoUrl(),
-            ActuatorInfoMetadata.class);
+        ActuatorInfoMetadata metadata = restTemplate.getForObject(actuatorInfoUrl, ActuatorInfoMetadata.class);
 
         Objects.requireNonNull(metadata);
         return metadata.getServiceBomMap()
