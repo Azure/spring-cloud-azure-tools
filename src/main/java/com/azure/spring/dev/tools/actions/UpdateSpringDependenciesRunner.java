@@ -47,7 +47,8 @@ public class UpdateSpringDependenciesRunner implements CommandLineRunner {
     public void run(String... args) throws Exception {
         LOGGER.info("---------- starting {} ----------", UpdateSpringDependenciesRunner.class.getSimpleName());
         String latestSpringBootVersion = metadataReader.getCurrentVersion();
-        String azureSupportedSpringBootVersion = azureCurrentVersionReader.getCurrentSupportedSpringBootVersion();
+        String azureSupportedSpringBootVersion =
+            azureCurrentVersionReader.getCurrentSupportedSpringBootVersion().replace("\n", "");
         String azureSupportedSpringCloudVersion = azureCurrentVersionReader.getCurrentSupportedSpringCloudVersion();
         String releaseNotesContents = springBootReleaseNotesReader.getReleaseNotes(latestSpringBootVersion);
         if (!azureSupportedSpringBootVersion.equals(latestSpringBootVersion)) {
@@ -63,6 +64,7 @@ public class UpdateSpringDependenciesRunner implements CommandLineRunner {
                     .get());
                 bufferedWriter.newLine();
                 bufferedWriter.write(azureSupportedSpringBootVersion);
+                bufferedWriter.newLine();
                 bufferedWriter.write(azureSupportedSpringCloudVersion);
             }
             try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("pr-descriptions.txt"))) {
