@@ -108,7 +108,7 @@ class SpringCloudAzureCurrentVersionReaderTest {
     }
 
     @Test
-    void SpringCloudMillstoneVersionCanBeFound() {
+    void SpringCloudMilestoneVersionCanBeFound() {
         String fileContent = StringUtils.joinWith(System.lineSeparator(),
             "## Spring cloud dependency versions",
             "org.springframework.cloud:spring-cloud-dependencies;2021.0.0-M1",
