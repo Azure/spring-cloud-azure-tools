@@ -73,19 +73,21 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
             .peek(s -> activeSpringBootVersions.add(s.getSpringBootVersion()))
             .collect(Collectors.toList());
 
-        List<SpringCloudAzureSupportMetadata> snapshot = azureSupportMetadataMap.values()
+        List<SpringCloudAzureSupportMetadata> snapshot = azureSupportMetadataMap
+            .values()
             .stream()
             .filter(s -> !activeSpringBootVersions.contains(s.getSpringBootVersion()))
             .peek(s -> s.setCurrent(false))
             .peek(s -> s.setSupportStatus(SupportStatus.END_OF_LIFE))
             .collect(Collectors.toList());
 
-        List<SpringCloudAzureSupportMetadata> result = Stream.concat(current.stream(), snapshot.stream())
-                                                             .sorted((o1, o2) -> {
-                                                                 Version v1 = Version.parse(o1.getSpringBootVersion());
-                                                                 Version v2 = Version.parse(o2.getSpringBootVersion());
-                                                                 return v2.compareTo(v1);
-                                                             }).collect(Collectors.toList());
+        List<SpringCloudAzureSupportMetadata> result = Stream
+            .concat(current.stream(), snapshot.stream())
+            .sorted((o1, o2) -> {
+                Version v1 = Version.parse(o1.getSpringBootVersion());
+                Version v2 = Version.parse(o2.getSpringBootVersion());
+                return v2.compareTo(v1);
+            }).collect(Collectors.toList());
 
         writeToFile(result);
     }
