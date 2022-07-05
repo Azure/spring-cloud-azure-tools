@@ -7,7 +7,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Read SpringCloudAzure supportStatus from https://raw.githubusercontent
@@ -41,4 +43,15 @@ public class SpringCloudAzureSupportMetadataReader {
         }
     }
 
+    /**
+     * Get a Map of SpringBoot and SpringCloud versions
+     * @return a version map
+     */
+    public Map<String, String> getSpringBootCloudVersion() {
+        Map<String, String> springBootCloudVersion = new HashMap<>();
+        for (SpringCloudAzureSupportMetadata metadata : getAzureSupportMetadata()) {
+            springBootCloudVersion.put(metadata.getSpringBootVersion(), metadata.getSpringCloudVersion());
+        }
+        return springBootCloudVersion;
+    }
 }

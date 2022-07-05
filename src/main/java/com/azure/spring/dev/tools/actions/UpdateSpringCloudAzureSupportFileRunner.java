@@ -58,7 +58,9 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
     @Override
     public void run(String... args) throws Exception {
         LOGGER.info("---------- starting {} ----------", UpdateSpringCloudAzureSupportFileRunner.class.getSimpleName());
-        List<SpringCloudAzureSupportMetadata> azureSupportMetadata = azureSupportMetadataReader.getAzureSupportMetadata();
+        List<SpringCloudAzureSupportMetadata> azureSupportMetadata =
+            azureSupportMetadataReader.getAzureSupportMetadata();
+        Map<String, String> springBootCloudVersion = azureSupportMetadataReader.getSpringBootCloudVersion();
 
         final Set<String> activeSpringBootVersions = new HashSet<>();
 
@@ -73,6 +75,8 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
             .peek(s -> activeSpringBootVersions.add(s.getSpringBootVersion()))
             .collect(Collectors.toList());
 
+        resetEndOfLife(springBootCloudVersion, current);
+
         List<SpringCloudAzureSupportMetadata> snapshot = azureSupportMetadata
             .stream()
             .filter(s -> !activeSpringBootVersions.contains(s.getSpringBootVersion()))
@@ -82,16 +86,26 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
 
         List<SpringCloudAzureSupportMetadata> result = Stream.concat(current.stream(), snapshot.stream())
                                                              .sorted((o1, o2) -> {
-            Version v1 = Version.parse(o1.getSpringBootVersion());
-            Version v2 = Version.parse(o2.getSpringBootVersion());
-            return v2.compareTo(v1);
-        }).collect(Collectors.toList());
+                                                                 Version v1 = Version.parse(o1.getSpringBootVersion());
+                                                                 Version v2 = Version.parse(o2.getSpringBootVersion());
+                                                                 return v2.compareTo(v1);
+                                                             }).collect(Collectors.toList());
 
         writeToFile(result);
     }
 
+    private void resetEndOfLife(Map<String, String> springBootCloudVersion,
+                                List<SpringCloudAzureSupportMetadata> current) {
+        for (int i = 0; i < current.size(); i++) {
+            if (current.get(i).getSupportStatus().equals(SupportStatus.END_OF_LIFE)) {
+                current.get(i).setSpringCloudVersion(springBootCloudVersion.get(current.get(i).getSpringBootVersion()));
+            }
+        }
+    }
+
     private void writeToFile(List<SpringCloudAzureSupportMetadata> result) throws IOException {
-        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("spring-cloud-azure-supported-spring.json"))) {
+        try (BufferedWriter bufferedWriter = new BufferedWriter(
+            new FileWriter("spring-cloud-azure-supported-spring.json"))) {
             objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 
             DefaultPrettyPrinter prettyPrinter = new DefaultPrettyPrinter();
