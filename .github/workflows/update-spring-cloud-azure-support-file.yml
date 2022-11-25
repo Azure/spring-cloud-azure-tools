@@ -52,7 +52,7 @@ jobs:
         env:
           PULL_REQUEST_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           PULL_REQUEST_REPOSITORY: Azure/azure-sdk-for-java
-          PULL_REQUEST_TITLE: "Update Spring Cloud Azure Support File"
+          PULL_REQUEST_TITLE: "Update Spring Boot and Spring Cloud versions for the Spring compatibility tests"
           PULL_REQUEST_FROM_BRANCH: "${{ secrets.USER }}:update-spring-cloud-azure-support-file"
           PULL_REQUEST_BRANCH: "main"
           PULL_REQUEST_BODY: "Update Spring Boot and Spring Cloud versions for the compatibility test.\n\nIf you merged this PR, please update [Spring Cloud Azure Timeline](https://github.com/Azure/azure-sdk-for-java/wiki/Spring-Cloud-Azure-Timeline).\n\nThis PR is created by GitHub Actions: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"

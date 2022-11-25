@@ -2,6 +2,7 @@ package com.azure.spring.dev.tools.dependency.support;
 
 import com.azure.spring.dev.tools.dependency.configuration.DependencyProperties;
 import com.azure.spring.dev.tools.dependency.metadata.spring.ProjectRelease;
+import com.azure.spring.dev.tools.dependency.metadata.spring.ReleaseStatus;
 import com.azure.spring.dev.tools.dependency.metadata.spring.SpringReleaseMetadata;
 import org.springframework.web.client.RestTemplate;
 
@@ -40,7 +41,8 @@ public class SpringProjectMetadataReader {
     public String getCurrentVersion() {
         return getProjectReleases("spring-boot")
             .stream()
-            .filter(p -> p.isCurrent())
+            .filter(p -> p.getReleaseStatus().equals(ReleaseStatus.GENERAL_AVAILABILITY))
+            .filter(p -> p.getVersion().matches("2\\.\\d\\.\\d+"))
             .filter(Objects::nonNull)
             .map(ProjectRelease::getVersion)
             .findFirst()
