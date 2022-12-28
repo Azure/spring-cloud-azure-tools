@@ -11,6 +11,9 @@ This repo contains a [github actions](.github/workflows/sonar-spring-cloud-azure
 
 See [this](./automate-test-spring-boot-and-spring-cloud-compatibility.md) for details.
 
+## Information about `spring-cloud-azure-supported-spring.json`
+
+See [this](./information-about-spring-cloud-azure-supported-spring-json-file.md) for details.
 
 ## Contributing
 
