@@ -9,8 +9,12 @@ This repo contains a [github actions](.github/workflows/sonar-spring-cloud-azure
 
 ## Automated test spring boot and spring cloud compatibility
 
-See [this](./automate-test-spring-boot-and-spring-cloud-compatibility.md) for details.
+This tool set aims to automate the process of testing compatibility of Spring Cloud Azure with Spring Boot and Spring Cloud. The automation includes:
+- [Defining the target versions of Spring Boot / Spring Cloud](https://github.com/Azure/spring-cloud-azure-tools/actions/workflows/update-spring-cloud-azure-support-file.yml), which will maintain a `spring-cloud-azure-supported-spring.json` file in [azure-sdk-for-java/sdk/spring](https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/spring/spring-cloud-azure-supported-spring.json). See [this](./information-about-spring-cloud-azure-supported-spring-json-file.md) for more details about the json file definition.
+- [Upgrade the dependency versions](https://github.com/Azure/spring-cloud-azure-tools/actions/workflows/update-spring-dependencies.yml) of Spring Cloud Azure that are managed by Spring Boot and Spring Cloud.
+- Run compatibility tests in the `azure-sdk-for-java` repo, see the [job definition](https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/spring/compatibility-tests.yml).
 
+See [this](./automate-test-spring-boot-and-spring-cloud-compatibility.md) for details about the automation process.
 
 ## Contributing
 
