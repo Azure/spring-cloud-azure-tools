@@ -115,18 +115,14 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
         if (supportMetadata != null && supportMetadata.getSupportStatus() == SupportStatus.END_OF_LIFE) {
             return supportMetadata.getSpringCloudVersion();
         }
-        try {
-            return this.springCloudCompatibleSpringBootVersionRanges
-                .entrySet()
-                .stream()
-                .filter(entry -> entry.getValue().match(Version.parse(springBootVersion)))
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList())
-                .stream().findFirst().get();
-        } catch (Exception e) {
-            LOGGER.info("Spring Boot " + springBootVersion + " does not support yet, so skip it");
-        }
-        return "not get the supported Spring Cloud version yet";
+
+        return this.springCloudCompatibleSpringBootVersionRanges
+            .entrySet()
+            .stream()
+            .filter(entry -> entry.getValue().match(Version.parse(springBootVersion)))
+            .map(Map.Entry::getKey)
+            .collect(Collectors.toList())
+            .stream().findFirst().orElse("NONE_SUPPORTED_SPRING_CLOUD_VERSION");
     }
 
 }
