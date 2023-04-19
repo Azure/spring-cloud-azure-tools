@@ -115,7 +115,6 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
         if (supportMetadata != null && supportMetadata.getSupportStatus() == SupportStatus.END_OF_LIFE) {
             return supportMetadata.getSpringCloudVersion();
         }
-
         return this.springCloudCompatibleSpringBootVersionRanges
             .entrySet()
             .stream()
