@@ -122,7 +122,7 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
                 .filter(entry -> entry.getValue().match(Version.parse(springBootVersion)))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList())
-                .stream().findFirst().orElseThrow();
+                .stream().findFirst().get();
         } catch (Exception e) {
             LOGGER.info("Spring Boot " + springBootVersion + " does not support yet, so skip it");
         }
