@@ -40,6 +40,7 @@ import static com.azure.spring.dev.tools.dependency.support.converter.SpringClou
 @Component
 public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunner {
     private static final Logger LOGGER = LoggerFactory.getLogger(UpdateSpringCloudAzureSupportFileRunner.class);
+    static final String NONE_SUPPORTED_VERSION = "NONE_SUPPORTED_SPRING_CLOUD_VERSION";
     private final SpringProjectMetadataReader springProjectMetadataReader;
     private final Map<String, VersionRange> springCloudCompatibleSpringBootVersionRanges;
     private final Map<String, SpringCloudAzureSupportMetadata> azureSupportMetadataMap;
@@ -110,7 +111,7 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
         return supportMetadata == null ? null : supportMetadata.getSupportStatus();
     }
 
-    private String findCompatibleSpringCloudVersion(String springBootVersion) {
+    String findCompatibleSpringCloudVersion(String springBootVersion) {
         SpringCloudAzureSupportMetadata supportMetadata = this.azureSupportMetadataMap.get(springBootVersion);
         if (supportMetadata != null && supportMetadata.getSupportStatus() == SupportStatus.END_OF_LIFE) {
             return supportMetadata.getSpringCloudVersion();
@@ -121,7 +122,7 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
             .filter(entry -> entry.getValue().match(Version.parse(springBootVersion)))
             .map(Map.Entry::getKey)
             .collect(Collectors.toList())
-            .stream().findFirst().orElseThrow();
+            .stream().findFirst().orElse(NONE_SUPPORTED_VERSION);
     }
 
 }
