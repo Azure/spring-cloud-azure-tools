@@ -25,34 +25,25 @@ class UpdateSpringCloudAzureSupportFileRunnerTest {
         mock(SpringCloudAzureSupportMetadataReader.class);
     private final Map<String, VersionRange> ranges = Collections.singletonMap("2022.0.0-M1",
         new VersionRange(Version.parse("3.0.0-M1"), true, Version.parse("3.0.0-M2"), false));
+    private UpdateSpringCloudAzureSupportFileRunner runner = null;
 
     @BeforeEach
     void before() {
         MockitoAnnotations.openMocks(this);
         when(this.springInitializrMetadataReader.getCompatibleSpringBootVersions("spring-cloud")).thenReturn(ranges);
         when(this.azureSupportMetadataReader.getAzureSupportMetadata()).thenReturn(List.of(new SpringCloudAzureSupportMetadata()));
+        runner = new UpdateSpringCloudAzureSupportFileRunner(null, springInitializrMetadataReader,
+            azureSupportMetadataReader, null);
     }
 
     @Test
     void testFindCompatibleSpringCloudVersion() {
-        UpdateSpringCloudAzureSupportFileRunner runner = new UpdateSpringCloudAzureSupportFileRunner(null,
-            springInitializrMetadataReader,
-            azureSupportMetadataReader, null);
-
-        String compatibleSpringCloudVersion = runner.findCompatibleSpringCloudVersion("3.0.0-M1");
-
-        Assertions.assertEquals("2022.0.0-M1", compatibleSpringCloudVersion);
+        Assertions.assertEquals("2022.0.0-M1", runner.findCompatibleSpringCloudVersion("3.0.0-M1"));
     }
 
     @Test
     void testNotFindCompatibleSpringCloudVersion() {
-        UpdateSpringCloudAzureSupportFileRunner runner = new UpdateSpringCloudAzureSupportFileRunner(null,
-            springInitializrMetadataReader,
-            azureSupportMetadataReader, null);
-
-        String compatibleSpringCloudVersion = runner.findCompatibleSpringCloudVersion("2.5.14");
-
         Assertions.assertEquals(UpdateSpringCloudAzureSupportFileRunner.NONE_SUPPORTED_VERSION,
-            compatibleSpringCloudVersion);
+            runner.findCompatibleSpringCloudVersion("2.5.14"));
     }
 }
