@@ -25,13 +25,12 @@ class UpdateSpringCloudAzureSupportFileRunnerTest {
         mock(SpringCloudAzureSupportMetadataReader.class);
     private final Map<String, VersionRange> ranges = Collections.singletonMap("2022.0.0-M1",
         new VersionRange(Version.parse("3.0.0-M1"), true, Version.parse("3.0.0-M2"), false));
-    private final SpringCloudAzureSupportMetadata data = new SpringCloudAzureSupportMetadata();
 
     @BeforeEach
     void before() {
         MockitoAnnotations.openMocks(this);
         when(this.springInitializrMetadataReader.getCompatibleSpringBootVersions("spring-cloud")).thenReturn(ranges);
-        when(this.azureSupportMetadataReader.getAzureSupportMetadata()).thenReturn(List.of(data));
+        when(this.azureSupportMetadataReader.getAzureSupportMetadata()).thenReturn(List.of(new SpringCloudAzureSupportMetadata()));
     }
 
     @Test
