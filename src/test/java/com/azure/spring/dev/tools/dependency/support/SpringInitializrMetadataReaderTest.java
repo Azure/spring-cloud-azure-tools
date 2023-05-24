@@ -1,5 +1,6 @@
 package com.azure.spring.dev.tools.dependency.support;
 
+import com.azure.spring.dev.tools.dependency.configuration.DependencyProperties;
 import com.azure.spring.dev.tools.dependency.metadata.maven.VersionRange;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -10,7 +11,7 @@ class SpringInitializrMetadataReaderTest {
     private final RestTemplate restTemplate = new RestTemplate();
     private final String actuatorInfoUrl = "https://start.spring.io/actuator/info";
     private final SpringInitializrMetadataReader springInitializrMetadataReader =
-        new SpringInitializrMetadataReader(null, null);
+        new SpringInitializrMetadataReader(restTemplate, new DependencyProperties());
 
     @Test
     void lowerInclusive() {
@@ -46,4 +47,9 @@ class SpringInitializrMetadataReaderTest {
         Assertions.assertEquals(200, result.getStatusCodeValue());
     }
 
+    @Test
+    void onlyLowerVersion() {
+        VersionRange versionRange = springInitializrMetadataReader.parseVersionRange("Spring Boot >=3.1.0-M1");
+        Assertions.assertEquals("3.1.0-M1", versionRange.toRangeString());
+    }
 }

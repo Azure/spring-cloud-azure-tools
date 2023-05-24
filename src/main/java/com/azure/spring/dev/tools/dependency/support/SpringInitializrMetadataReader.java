@@ -63,7 +63,7 @@ public class SpringInitializrMetadataReader {
                 }
             }
         }
-        if (lowerVersion == null || higherVersion == null) {
+        if (lowerVersion == null && higherVersion == null) {
             throw new IllegalStateException("Fail to parse version range from " + range);
         }
         return new VersionRange(lowerVersion, lowerInclusive, higherVersion, higherInclusive);
