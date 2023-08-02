@@ -1,3 +1,6 @@
+# This is a GitHub action for building and publishing the docker image for 
+# Azure Spring Apps hello world sample https://github.com/spring-guides/gs-spring-boot-for-azure
+
 name: Docker Image CI
 
 on:
@@ -5,7 +8,7 @@ on:
     inputs:
       commit-sha:
         required: true
-        description: The commit SHA to check out and build from.
+        description: The full (not short) commit SHA to check out and build from.
       tag:  
         required: true
         description: The Docker image tag, such as 0.0.1.
