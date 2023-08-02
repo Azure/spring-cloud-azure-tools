@@ -1,0 +1,56 @@
+name: Docker Image CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit-sha:
+        required: true
+        description: The commit SHA to check out and build from.
+      tag:  
+        required: true
+        description: The Docker image tag, such as 0.0.1.
+      dockerfile-path:
+        required: false
+        description: The Dockerfile to build the image.
+        default: "https://raw.githubusercontent.com/saragluna/spring-cloud-azure-tools/xiada/byoc/asa-sample-helloworld/Dockerfile"  
+    
+env: 
+  IMAGE_NAME: samples/hello-world
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with: 
+        repository: 'spring-guides/gs-spring-boot-for-azure'
+        ref: ${{ github.event.inputs.commit-sha }}
+    - name: Setup Java JDK
+      uses: actions/setup-java@v3.12.0
+      with:  
+        java-version: '17'
+        distribution: 'temurin'
+        cache: 'maven'
+    - name: Download the Dockerfile
+      run:  curl -L ${{ github.event.inputs.dockerfile-path }}  -o Dockerfile
+      working-directory: ./complete 
+    - name: Build with Maven
+      run: ./mvnw clean package  
+      working-directory: ./complete
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2    
+    - name: Log into registry
+      uses: docker/login-action@v1
+      with:
+        registry: ${{ secrets.ACR_ENDPOINT }}
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}    
+    - name: Build and push Docker images
+      uses: docker/build-push-action@v4.1.1
+      with:
+        context: ./complete
+        platforms: linux/amd64, linux/arm64
+        push: true
+        tags: ${{ secrets.ACR_ENDPOINT }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.tag }}
+    
