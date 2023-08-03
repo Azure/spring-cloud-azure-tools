@@ -1,0 +1,44 @@
+# This is a GitHub action for building and creating a GitHub release for
+# Azure Spring Apps hello world sample https://github.com/spring-guides/gs-spring-boot-for-azure
+
+name: Releases
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit-sha:
+        required: true
+        description: The full (not short) commit SHA to check out and build from.
+      version:  
+        required: true
+        description: The released jar version, such as 0.0.1.
+    
+env: 
+  APP_NAME: boot-for-azure
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with: 
+        repository: 'spring-guides/gs-spring-boot-for-azure'
+        ref: ${{ github.event.inputs.commit-sha }}
+    - name: Setup Java JDK
+      uses: actions/setup-java@v3.12.0
+      with:  
+        java-version: '17'
+        distribution: 'temurin'
+        cache: 'maven'
+    - name: Build with Maven
+      run: ./mvnw clean package  
+      working-directory: ./complete
+    - name: Rename the 
+      run: mv *.jar ${{ env.APP_NAME }}-${{ github.event.inputs.version }}.jar
+      working-directory: ./complete/target
+    - uses: ncipollo/release-action@v1
+      with:
+        artifacts: "./complete/target/*.jar"
+        tag: ${{ github.event.inputs.version }}
+        commit: main
