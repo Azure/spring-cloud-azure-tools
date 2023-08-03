@@ -15,7 +15,7 @@ on:
       dockerfile-path:
         required: false
         description: The Dockerfile to build the image.
-        default: "https://raw.githubusercontent.com/saragluna/spring-cloud-azure-tools/xiada/byoc/asa-sample-helloworld/Dockerfile"  
+        default: "https://raw.githubusercontent.com/Azure/spring-cloud-azure-tools/main/asa-sample-helloworld/Dockerfile"
     
 env: 
   IMAGE_NAME: samples/hello-world
