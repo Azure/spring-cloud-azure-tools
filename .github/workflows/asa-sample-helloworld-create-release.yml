@@ -34,8 +34,10 @@ jobs:
     - name: Build with Maven
       run: ./mvnw clean package  
       working-directory: ./complete
-    - name: Rename the 
-      run: mv *.jar ${{ env.APP_NAME }}-${{ github.event.inputs.version }}.jar
+    - name: Rename the package
+      run: |
+        mv *.jar ${{ env.APP_NAME }}-${{ github.event.inputs.version }}.jar
+        ls 
       working-directory: ./complete/target
     - uses: ncipollo/release-action@v1
       with:
