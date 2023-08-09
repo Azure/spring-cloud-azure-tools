@@ -85,7 +85,7 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
             .peek(s -> s.setSupportStatus(SupportStatus.END_OF_LIFE))
             .collect(Collectors.toList());
 
-        SUPPORTED_VERSIONS.forEach(v -> snapshot.add(azureSupportMetadataMap.get(v)));
+        maintainVersions(snapshot, azureSupportMetadataMap);
 
         List<SpringCloudAzureSupportMetadata> result = Stream
             .concat(current.stream(), snapshot.stream())
@@ -100,7 +100,11 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
         writeToFile(result);
     }
 
-    private void setNewStatus(List<SpringCloudAzureSupportMetadata> result) {
+    void maintainVersions(List<SpringCloudAzureSupportMetadata> snapshot, Map<String, SpringCloudAzureSupportMetadata> map) {
+        SUPPORTED_VERSIONS.forEach(v -> snapshot.add(map.get(v)));
+    }
+
+    void setNewStatus(List<SpringCloudAzureSupportMetadata> result) {
         for (SpringCloudAzureSupportMetadata metadata : result) {
             if (metadata.getSupportStatus() == null) {
                 if (metadata.getReleaseStatus().equals(ReleaseStatus.GENERAL_AVAILABILITY)) {
