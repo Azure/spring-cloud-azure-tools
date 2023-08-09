@@ -4,6 +4,7 @@ import com.azure.spring.dev.tools.dependency.metadata.azure.SpringCloudAzureSupp
 import com.azure.spring.dev.tools.dependency.metadata.azure.SupportStatus;
 import com.azure.spring.dev.tools.dependency.metadata.maven.Version;
 import com.azure.spring.dev.tools.dependency.metadata.maven.VersionRange;
+import com.azure.spring.dev.tools.dependency.metadata.spring.ReleaseStatus;
 import com.azure.spring.dev.tools.dependency.support.SpringCloudAzureSupportMetadataReader;
 import com.azure.spring.dev.tools.dependency.support.SpringInitializrMetadataReader;
 import com.azure.spring.dev.tools.dependency.support.SpringProjectMetadataReader;
@@ -40,6 +41,7 @@ import static com.azure.spring.dev.tools.dependency.support.converter.SpringClou
 @Component
 public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunner {
     private static final Logger LOGGER = LoggerFactory.getLogger(UpdateSpringCloudAzureSupportFileRunner.class);
+    static final List<String> SUPPORTED_VERSIONS = Stream.of("2.5.15", "2.6.15").collect(Collectors.toList());
     static final String NONE_SUPPORTED_VERSION = "NONE_SUPPORTED_SPRING_CLOUD_VERSION";
     private final SpringProjectMetadataReader springProjectMetadataReader;
     private final Map<String, VersionRange> springCloudCompatibleSpringBootVersionRanges;
@@ -78,9 +80,12 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
             .values()
             .stream()
             .filter(s -> !activeSpringBootVersions.contains(s.getSpringBootVersion()))
+            .filter(s -> !SUPPORTED_VERSIONS.contains(s.getSpringBootVersion()))
             .peek(s -> s.setCurrent(false))
             .peek(s -> s.setSupportStatus(SupportStatus.END_OF_LIFE))
             .collect(Collectors.toList());
+
+        maintainVersions(snapshot, azureSupportMetadataMap);
 
         List<SpringCloudAzureSupportMetadata> result = Stream
             .concat(current.stream(), snapshot.stream())
@@ -90,7 +95,25 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
                 return v2.compareTo(v1);
             }).collect(Collectors.toList());
 
+        setNewStatus(result);
+
         writeToFile(result);
+    }
+
+    void maintainVersions(List<SpringCloudAzureSupportMetadata> snapshot, Map<String, SpringCloudAzureSupportMetadata> map) {
+        SUPPORTED_VERSIONS.forEach(v -> snapshot.add(map.get(v)));
+    }
+
+    void setNewStatus(List<SpringCloudAzureSupportMetadata> result) {
+        for (SpringCloudAzureSupportMetadata metadata : result) {
+            if (metadata.getSupportStatus() == null) {
+                if (metadata.getReleaseStatus().equals(ReleaseStatus.GENERAL_AVAILABILITY)) {
+                    metadata.setSupportStatus(SupportStatus.SUPPORTED);
+                } else {
+                    metadata.setSupportStatus(SupportStatus.TODO);
+                }
+            }
+        }
     }
 
     private void writeToFile(List<SpringCloudAzureSupportMetadata> result) throws IOException {
