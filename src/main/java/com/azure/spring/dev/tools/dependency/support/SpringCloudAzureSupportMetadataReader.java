@@ -11,7 +11,7 @@ import java.util.List;
 
 /**
  * Read SpringCloudAzure supportStatus from https://raw.githubusercontent
- * .com/Azure/azure-sdk-for-java/main/sdk/spring/spring-cloud-azure-supported-spring.json
+ * .com/Azure/azure-sdk-for-java/main/sdk/spring/pipeline/spring-cloud-azure-supported-spring.json
  */
 public class SpringCloudAzureSupportMetadataReader {
 

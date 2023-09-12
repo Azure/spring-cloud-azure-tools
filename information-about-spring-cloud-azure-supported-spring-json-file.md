@@ -1,4 +1,4 @@
-[spring-cloud-azure-supported-spring.json](https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/spring/spring-cloud-azure-supported-spring.json) file is to record **Spring Cloud Azure**'s support status of **Spring Boot** and **Spring Cloud** versions.
+[spring-cloud-azure-supported-spring.json](https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/spring/pipeline/spring-cloud-azure-supported-spring.json) file is to record **Spring Cloud Azure**'s support status of **Spring Boot** and **Spring Cloud** versions.
 Also provide information for `spring - compatibility - tests`.
 
 Following is a metadata from the file:

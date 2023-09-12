@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 /**
- * https://raw.githubusercontent.com/Azure/azure-sdk-for-java/main/sdk/spring/spring-cloud-azure-supported-spring.json
+ * https://raw.githubusercontent.com/Azure/azure-sdk-for-java/main/sdk/spring/pipeline/spring-cloud-azure-supported-spring.json
  *
  * [
  *   {
