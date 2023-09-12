@@ -28,7 +28,7 @@ jobs:
           if [[ $(git ls-remote --heads ${{ secrets.BRANCH_REPO }} update-spring-cloud-azure-support-file | wc -l) -eq 0 ]]; then
             cd azure-sdk-for-java
             git checkout -b update-spring-cloud-azure-support-file
-            cp -f ../spring-cloud-azure-supported-spring.json sdk/spring
+            cp -f ../spring-cloud-azure-supported-spring.json sdk/spring/pipeline
             if [[ -n "$(git status -s)" ]]; then
               echo "need_update_file=true" >> $GITHUB_ENV
             else
@@ -43,7 +43,7 @@ jobs:
           cd azure-sdk-for-java
           git config --global user.email github-actions@github.com
           git config --global user.name github-actions
-          git add sdk/spring/spring-cloud-azure-supported-spring.json
+          git add sdk/spring/pipeline/spring-cloud-azure-supported-spring.json
           git commit -m "Update Spring Boot and Spring Cloud versions for the compatibility test. This commit is created by GitHub Action: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
           git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git"
       - name: Create Pull Request
