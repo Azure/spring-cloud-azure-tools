@@ -28,7 +28,7 @@ jobs:
             echo "Remote branch doesn't exist"
             if [[ ! -f 'spring-versions.txt' ]]; then
               echo "No new Spring Boot version, No updates!"
-            elif [[ grep -q - 'spring-versions.txt' ]]; then
+            elif grep -q - 'spring-versions.txt'; then
               echo "Has non-GA version, cancel update!"
             else
               echo "need_update_version=true" >> $GITHUB_ENV
