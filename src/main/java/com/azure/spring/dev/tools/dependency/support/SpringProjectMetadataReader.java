@@ -44,7 +44,7 @@ public class SpringProjectMetadataReader {
         return getProjectReleases("spring-boot")
             .stream()
             .filter(p -> p.getReleaseStatus().equals(ReleaseStatus.GENERAL_AVAILABILITY))
-            .filter(p -> p.getVersion().matches("2\\.\\d\\.\\d+"))
+            .filter(p -> p.getVersion().matches("3\\.\\d\\.\\d+"))
             .map(ProjectRelease::getVersion)
             .map(VersionParser.DEFAULT::parse)
             .sorted(Comparator.reverseOrder())
