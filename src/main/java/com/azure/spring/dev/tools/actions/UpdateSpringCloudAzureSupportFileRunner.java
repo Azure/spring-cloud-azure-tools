@@ -41,7 +41,7 @@ import static com.azure.spring.dev.tools.dependency.support.converter.SpringClou
 @Component
 public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunner {
     private static final Logger LOGGER = LoggerFactory.getLogger(UpdateSpringCloudAzureSupportFileRunner.class);
-    static final List<String> SUPPORTED_VERSIONS = Stream.of("2.5.15", "2.6.15").collect(Collectors.toList());
+    static final List<String> SUPPORTED_VERSIONS = Stream.of("2.5.15", "2.6.15", "2.7.18").collect(Collectors.toList());
     static final String NONE_SUPPORTED_VERSION = "NONE_SUPPORTED_SPRING_CLOUD_VERSION";
     private final SpringProjectMetadataReader springProjectMetadataReader;
     private final Map<String, VersionRange> springCloudCompatibleSpringBootVersionRanges;
