@@ -71,6 +71,7 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
             .stream()
             .map(CONVERTER::convert)
             .filter(Objects::nonNull)
+            .filter(s -> s.getSpringBootVersion().matches("3\\.\\d\\.\\d+"))  // Only consider 3.x.x versions
             .peek(s -> s.setSpringCloudVersion(findCompatibleSpringCloudVersion(s.getSpringBootVersion())))
             .peek(s -> s.setSupportStatus(findSupportStatus(s.getSpringBootVersion())))
             .peek(s -> activeSpringBootVersions.add(s.getSpringBootVersion()))
