@@ -30,9 +30,9 @@ public class SpringProjectMetadataReader {
      * @param projectId the project id, such as "spring-boot", "spring-cloud"
      * @return the list of releases of the given project
      */
-    public List<ProjectRelease> getProjectReleases(String projectId) {
+    public List<ProjectRelease> getProjectReleases() {
 
-        SpringReleaseMetadata metadata = restTemplate.getForObject(properties.getMetadata().getUrl() + projectId,
+        SpringReleaseMetadata metadata = restTemplate.getForObject(properties.getMetadata().getUrl(),
             SpringReleaseMetadata.class);
 
         Objects.requireNonNull(metadata);
@@ -41,7 +41,7 @@ public class SpringProjectMetadataReader {
     }
 
     public String getCurrentVersion() {
-        return getProjectReleases("spring-boot")
+        return getProjectReleases()
             .stream()
             .filter(p -> p.getReleaseStatus().equals(ReleaseStatus.GENERAL_AVAILABILITY))
             .filter(p -> p.getVersion().matches("3\\.\\d\\.\\d+"))

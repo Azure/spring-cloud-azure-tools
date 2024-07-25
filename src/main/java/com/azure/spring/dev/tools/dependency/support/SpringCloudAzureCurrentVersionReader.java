@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 
 /**
  * Read current Spring Boot version from
- * https://raw.githubusercontent.com/Azure/azure-sdk-for-java/feature/spring-boot-3/eng/versioning/external_dependencies.txt
+ * https://raw.githubusercontent.com/Azure/azure-sdk-for-java/main/eng/versioning/external_dependencies.txt
  */
 public class SpringCloudAzureCurrentVersionReader {
 
