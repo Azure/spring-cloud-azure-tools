@@ -46,7 +46,7 @@ jobs:
         with:
           repository: 'Azure/azure-sdk-for-java'
           path: 'azure-sdk-for-java'
-          ref: feature/spring-boot-3
+          ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
           fetch-depth: 0
       - name: Generate spring_boot_managed_external_dependencies.txt
@@ -64,7 +64,7 @@ jobs:
           cd azure-sdk-for-java
           pip install termcolor
           pip install in_place
-          python ./sdk/spring/scripts/sync_external_dependencies.py -b ${{ env.spring_boot_version }}
+          python ./sdk/spring/scripts/sync_external_dependencies.py -b ${{ env.spring_boot_version }} -sbmvn 3
       - name: Update Versions
         if: ${{ env.need_update_version == 'true' }}
         run: |

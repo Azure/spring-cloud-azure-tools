@@ -67,7 +67,7 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
         final Set<String> activeSpringBootVersions = new HashSet<>();
 
         List<SpringCloudAzureSupportMetadata> current = springProjectMetadataReader
-            .getProjectReleases("spring-boot")
+            .getProjectReleases()
             .stream()
             .map(CONVERTER::convert)
             .filter(Objects::nonNull)
