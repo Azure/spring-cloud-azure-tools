@@ -47,7 +47,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          JAVA_OPTS: "-Xmx3062m -XX:MaxPermSize=512m -XX:ReservedCodeCacheSize=128m"
+          JAVA_OPTS: "-Xmx3062m -XX:MaxMetaspaceSize=512m -XX:ReservedCodeCacheSize=128m"
           SONAR_SCANNER_OPTS: "-Xmx3062m -XX:MaxPermSize=512m -XX:ReservedCodeCacheSize=128m"
           MAVEN_OPTS: "-Xmx3062m -XX:MaxPermSize=512m -XX:ReservedCodeCacheSize=128m"
         run: |
