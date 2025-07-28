@@ -41,7 +41,7 @@ import static com.azure.spring.dev.tools.dependency.support.converter.SpringClou
 @Component
 public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunner {
     private static final Logger LOGGER = LoggerFactory.getLogger(UpdateSpringCloudAzureSupportFileRunner.class);
-    static final List<String> SUPPORTED_VERSIONS = Stream.of("2.5.15", "2.6.15", "2.7.18", "3.0.13", "3.1.12", "3.2.12").collect(Collectors.toList());
+    static final List<String> SUPPORTED_VERSIONS = Stream.of("2.5.15", "2.6.15", "2.7.18", "3.0.13", "3.1.12", "3.2.12", "3.3.13").collect(Collectors.toList());
     static final String NONE_SUPPORTED_VERSION = "NONE_SUPPORTED_SPRING_CLOUD_VERSION";
     private final SpringProjectMetadataReader springProjectMetadataReader;
     private final Map<String, VersionRange> springCloudCompatibleSpringBootVersionRanges;
@@ -71,7 +71,7 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
             .stream()
             .map(CONVERTER::convert)
             .filter(Objects::nonNull)
-            .filter(s -> s.getSpringBootVersion().matches("3\\.[3-9]\\.\\d+"))  // Only consider 3.3.x versions or above
+            .filter(s -> s.getSpringBootVersion().matches("3\\.[4-9]\\.\\d+"))  // Only consider 3.4.x versions or above
             .peek(s -> s.setSpringCloudVersion(findCompatibleSpringCloudVersion(s.getSpringBootVersion())))
             .peek(s -> s.setSupportStatus(findSupportStatus(s.getSpringBootVersion())))
             .peek(s -> activeSpringBootVersions.add(s.getSpringBootVersion()))
