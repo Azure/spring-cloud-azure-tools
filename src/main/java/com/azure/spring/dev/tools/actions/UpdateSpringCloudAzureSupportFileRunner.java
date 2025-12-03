@@ -71,7 +71,7 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
             .stream()
             .map(CONVERTER::convert)
             .filter(Objects::nonNull)
-            .filter(s -> s.getSpringBootVersion().matches("3\\.[4-9]\\.\\d+"))  // Only consider 3.4.x versions or above
+            .filter(s -> isVersionSupported(s.getSpringBootVersion()))
             .peek(s -> s.setSpringCloudVersion(findCompatibleSpringCloudVersion(s.getSpringBootVersion())))
             .peek(s -> s.setSupportStatus(findSupportStatus(s.getSpringBootVersion())))
             .peek(s -> activeSpringBootVersions.add(s.getSpringBootVersion()))
@@ -147,6 +147,17 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
             .map(Map.Entry::getKey)
             .collect(Collectors.toList())
             .stream().findFirst().orElse(NONE_SUPPORTED_VERSION);
+    }
+
+    /**
+     * Checks if the given Spring Boot version is supported (3.5.0 or above).
+     * @param springBootVersion the Spring Boot version string to check
+     * @return true if the version is 3.5.0 or above, false otherwise
+     */
+    boolean isVersionSupported(String springBootVersion) {
+        Version version = Version.parse(springBootVersion);
+        Version minVersion = Version.parse("3.5.0");
+        return version.compareTo(minVersion) >= 0;
     }
 
 }
