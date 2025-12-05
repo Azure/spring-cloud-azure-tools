@@ -89,4 +89,20 @@ class UpdateSpringCloudAzureSupportFileRunnerTest {
         Assertions.assertTrue(lists.contains(data2));
         Assertions.assertFalse(lists.contains(data3));
     }
+
+    @Test
+    void testIsVersionSupported() {
+        // Test versions that should be supported (3.5.0 or above)
+        Assertions.assertTrue(runner.isVersionSupported("3.5.0"));
+        Assertions.assertTrue(runner.isVersionSupported("3.5.1"));
+        Assertions.assertTrue(runner.isVersionSupported("3.5.12"));
+        Assertions.assertTrue(runner.isVersionSupported("3.6.0"));
+        Assertions.assertTrue(runner.isVersionSupported("4.0.0"));
+
+        // Test versions that should not be supported (below 3.5.0)
+        Assertions.assertFalse(runner.isVersionSupported("3.4.9"));
+        Assertions.assertFalse(runner.isVersionSupported("3.4.0"));
+        Assertions.assertFalse(runner.isVersionSupported("3.3.13"));
+        Assertions.assertFalse(runner.isVersionSupported("2.7.18"));
+    }
 }
