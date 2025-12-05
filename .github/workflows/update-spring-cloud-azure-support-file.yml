@@ -23,36 +23,74 @@ jobs:
           ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
           fetch-depth: 0
-      - name: Make Decision Based on Git Diff and Branch Status
+      - name: Set Branch Name with Timestamp
         run: |
-          if [[ $(git ls-remote --heads ${{ secrets.BRANCH_REPO }} update-spring-cloud-azure-support-file | wc -l) -eq 0 ]]; then
-            cd azure-sdk-for-java
-            git checkout -b update-spring-cloud-azure-support-file
-            cp -f ../spring-cloud-azure-supported-spring.json sdk/spring/pipeline
-            if [[ -n "$(git status -s)" ]]; then
-              echo "need_update_file=true" >> $GITHUB_ENV
-            else
-              echo "No file changes, no commits."
-            fi
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          PR_TITLE="Update Spring Boot and Spring Cloud versions for the Spring compatibility tests"
+          GITHUB_ACTION_URL="https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
+          COMMIT_MESSAGE="${PR_TITLE}.\nThis commit is created by GitHub Action: ${GITHUB_ACTION_URL}"
+
+          echo "BRANCH_NAME=update-spring-cloud-azure-support-file-${TIMESTAMP}" >> $GITHUB_ENV
+          echo "COMMIT_MESSAGE=${COMMIT_MESSAGE}" >> $GITHUB_ENV
+          echo "PR_TITLE=${PR_TITLE}" >> $GITHUB_ENV
+          echo "PULL_REQUEST_BODY=${COMMIT_MESSAGE}\nIf you merged this PR, please update [Spring Cloud Azure Timeline](https://github.com/Azure/azure-sdk-for-java/wiki/Spring-Cloud-Azure-Timeline)." >> $GITHUB_ENV
+      - name: Make Decision Based on Git Diff
+        run: |
+          cd azure-sdk-for-java
+          git checkout -b ${{ env.BRANCH_NAME }}
+          cp -f ../spring-cloud-azure-supported-spring.json sdk/spring/pipeline
+          if [[ -n "$(git status -s)" ]]; then
+            echo "NEED_UPDATE_FILE=true" >> $GITHUB_ENV
           else
-            echo "Branch exists, cancel commit"
+            echo "No file changes, no commits."
           fi
       - name: Push Commit
-        if: ${{ env.need_update_file == 'true' }}
+        if: ${{ env.NEED_UPDATE_FILE == 'true' }}
         run: |
           cd azure-sdk-for-java
           git config --global user.email github-actions@github.com
           git config --global user.name github-actions
           git add sdk/spring/pipeline/spring-cloud-azure-supported-spring.json
-          git commit -m "Update Spring Boot and Spring Cloud versions for the compatibility test. This commit is created by GitHub Action: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
+          git commit -m "${{ env.COMMIT_MESSAGE }}"
           git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git"
+      - name: Close Old Pull Requests
+        if: ${{ env.NEED_UPDATE_FILE == 'true' }}
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+          script: |
+            const prTitle = process.env.PR_TITLE;
+            const { data: pullRequests } = await github.rest.pulls.list({
+              owner: 'Azure',
+              repo: 'azure-sdk-for-java',
+              state: 'open'
+            });
+
+            const oldPRs = pullRequests.filter(pr => pr.title === prTitle);
+
+            for (const pr of oldPRs) {
+              console.log(`Closing PR #${pr.number} with comment`);
+              await github.rest.issues.createComment({
+                owner: 'Azure',
+                repo: 'azure-sdk-for-java',
+                issue_number: pr.number,
+                body: 'This PR has been superseded by a newer update. Closing automatically.'
+              });
+
+              await github.rest.pulls.update({
+                owner: 'Azure',
+                repo: 'azure-sdk-for-java',
+                pull_number: pr.number,
+                state: 'closed'
+              });
+            }
       - name: Create Pull Request
-        if: ${{ env.need_update_file == 'true' }}
+        if: ${{ env.NEED_UPDATE_FILE == 'true' }}
         uses: vsoch/pull-request-action@master
         env:
           PULL_REQUEST_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           PULL_REQUEST_REPOSITORY: Azure/azure-sdk-for-java
-          PULL_REQUEST_TITLE: "Update Spring Boot and Spring Cloud versions for the Spring compatibility tests"
-          PULL_REQUEST_FROM_BRANCH: "${{ secrets.USER }}:update-spring-cloud-azure-support-file"
+          PULL_REQUEST_TITLE: "${{ env.PR_TITLE }}"
+          PULL_REQUEST_FROM_BRANCH: "${{ secrets.USER }}:${{ env.BRANCH_NAME }}"
           PULL_REQUEST_BRANCH: "main"
-          PULL_REQUEST_BODY: "Update Spring Boot and Spring Cloud versions for the compatibility test.\n\nIf you merged this PR, please update [Spring Cloud Azure Timeline](https://github.com/Azure/azure-sdk-for-java/wiki/Spring-Cloud-Azure-Timeline).\n\nThis PR is created by GitHub Actions: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
+          PULL_REQUEST_BODY: "${{ env.PULL_REQUEST_BODY }}"
