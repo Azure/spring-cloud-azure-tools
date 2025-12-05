@@ -28,12 +28,20 @@ jobs:
           TIMESTAMP=$(date +%Y%m%d-%H%M%S)
           PR_TITLE="Update Spring Boot and Spring Cloud versions for the Spring compatibility tests"
           GITHUB_ACTION_URL="https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
-          COMMIT_MESSAGE="${PR_TITLE}.\nThis commit is created by GitHub Action: ${GITHUB_ACTION_URL}"
 
           echo "BRANCH_NAME=update-spring-cloud-azure-support-file-${TIMESTAMP}" >> $GITHUB_ENV
-          echo "COMMIT_MESSAGE=${COMMIT_MESSAGE}" >> $GITHUB_ENV
           echo "PR_TITLE=${PR_TITLE}" >> $GITHUB_ENV
-          echo "PULL_REQUEST_BODY=${COMMIT_MESSAGE}\nIf you merged this PR, please update [Spring Cloud Azure Timeline](https://github.com/Azure/azure-sdk-for-java/wiki/Spring-Cloud-Azure-Timeline)." >> $GITHUB_ENV
+
+          echo "COMMIT_MESSAGE<<EOF" >> $GITHUB_ENV
+          echo "${PR_TITLE}." >> $GITHUB_ENV
+          echo "This commit is created by GitHub Action: ${GITHUB_ACTION_URL}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+          echo "PULL_REQUEST_BODY<<EOF" >> $GITHUB_ENV
+          echo "${PR_TITLE}." >> $GITHUB_ENV
+          echo "This commit is created by GitHub Action: ${GITHUB_ACTION_URL}" >> $GITHUB_ENV
+          echo "If you merged this PR, please update [Spring Cloud Azure Timeline](https://github.com/Azure/azure-sdk-for-java/wiki/Spring-Cloud-Azure-Timeline)." >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
       - name: Make Decision Based on Git Diff
         run: |
           cd azure-sdk-for-java
