@@ -80,9 +80,12 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
             .values()
             .stream()
             .filter(s -> !activeSpringBootVersions.contains(s.getSpringBootVersion()))
-            .filter(s -> isVersionSupported(s.getSpringBootVersion()))
             .peek(s -> s.setCurrent(false))
-            .peek(s -> s.setSupportStatus(SupportStatus.END_OF_LIFE))
+            .peek(s -> {
+                if (!Objects.equals(s.getSpringBootVersion(), "2.7.18")) { // Special case for 2.7.18
+                    s.setSupportStatus(SupportStatus.END_OF_LIFE);
+                }
+            })
             .collect(Collectors.toList());
 
         List<SpringCloudAzureSupportMetadata> result = Stream
@@ -150,8 +153,7 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
     boolean isVersionSupported(String springBootVersion) {
         Version version = Version.parse(springBootVersion);
         return version.compareTo(Version.parse("3.5.0")) >= 0
-            && version.compareTo(Version.parse("4.0.0")) < 0
-            || springBootVersion.equals("2.7.18");
+            && version.compareTo(Version.parse("4.0.0")) < 0;
     }
 
 }
