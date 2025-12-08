@@ -35,13 +35,12 @@ import static com.azure.spring.dev.tools.dependency.support.converter.SpringClou
 /**
  * This Runner is used to generate the newest spring-cloud-azure-supported-spring.json file for
  * spring compatibility tests, which contains information about Spring Boot and Spring Cloud supported by Azure,
- * such as: https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/spring/pipeline/spring-cloud-azure-supported-spring.json
+ * such as: <a href="https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/spring/pipeline/spring-cloud-azure-supported-spring.json">...</a>
  */
 @ConditionalOnProperty("update-spring-cloud-azure-support-file")
 @Component
 public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunner {
     private static final Logger LOGGER = LoggerFactory.getLogger(UpdateSpringCloudAzureSupportFileRunner.class);
-    static final List<String> SUPPORTED_VERSIONS = Stream.of("2.5.15", "2.6.15", "2.7.18", "3.0.13", "3.1.12", "3.2.12", "3.3.13").collect(Collectors.toList());
     static final String NONE_SUPPORTED_VERSION = "NONE_SUPPORTED_SPRING_CLOUD_VERSION";
     private final SpringProjectMetadataReader springProjectMetadataReader;
     private final Map<String, VersionRange> springCloudCompatibleSpringBootVersionRanges;
@@ -81,12 +80,9 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
             .values()
             .stream()
             .filter(s -> !activeSpringBootVersions.contains(s.getSpringBootVersion()))
-            .filter(s -> !SUPPORTED_VERSIONS.contains(s.getSpringBootVersion()))
             .peek(s -> s.setCurrent(false))
             .peek(s -> s.setSupportStatus(SupportStatus.END_OF_LIFE))
             .collect(Collectors.toList());
-
-        maintainVersions(snapshot, azureSupportMetadataMap);
 
         List<SpringCloudAzureSupportMetadata> result = Stream
             .concat(current.stream(), snapshot.stream())
@@ -99,10 +95,6 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
         setNewStatus(result);
 
         writeToFile(result);
-    }
-
-    void maintainVersions(List<SpringCloudAzureSupportMetadata> snapshot, Map<String, SpringCloudAzureSupportMetadata> map) {
-        SUPPORTED_VERSIONS.forEach(v -> snapshot.add(map.get(v)));
     }
 
     void setNewStatus(List<SpringCloudAzureSupportMetadata> result) {
@@ -157,8 +149,7 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
     boolean isVersionSupported(String springBootVersion) {
         Version version = Version.parse(springBootVersion);
         return version.compareTo(Version.parse("3.5.0")) >= 0
-            && version.compareTo(Version.parse("4.0.0")) < 0
-            && !springBootVersion.contains("-SNAPSHOT");
+            && version.compareTo(Version.parse("4.0.0")) < 0;
     }
 
 }
