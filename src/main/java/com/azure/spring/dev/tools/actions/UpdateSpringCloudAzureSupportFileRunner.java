@@ -158,7 +158,7 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
         Version version = Version.parse(springBootVersion);
         return version.compareTo(Version.parse("3.5.0")) >= 0
             && version.compareTo(Version.parse("4.0.0")) < 0
-            && springBootVersion.contains("-SNAPSHOT");
+            && !springBootVersion.contains("-SNAPSHOT");
     }
 
 }
