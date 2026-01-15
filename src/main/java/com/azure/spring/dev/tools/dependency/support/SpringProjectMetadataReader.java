@@ -27,7 +27,6 @@ public class SpringProjectMetadataReader {
 
     /**
      * Get {@link SpringReleaseMetadata} from https://spring.io/project_metadata/{projectId}
-     * @param projectId the project id, such as "spring-boot", "spring-cloud"
      * @return the list of releases of the given project
      */
     public List<ProjectRelease> getProjectReleases() {

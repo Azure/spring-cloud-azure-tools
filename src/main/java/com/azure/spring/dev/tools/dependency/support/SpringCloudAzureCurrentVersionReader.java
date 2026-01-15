@@ -14,9 +14,9 @@ import java.util.regex.Pattern;
 public class SpringCloudAzureCurrentVersionReader {
 
     static final Pattern SPRING_BOOT_DEPENDENCIES_PATTERN =
-        Pattern.compile("(springboot3_org.springframework.boot:spring-boot-dependencies;)([.\\-\\w]+)");
+        Pattern.compile("(org.springframework.boot:spring-boot-dependencies;)([.\\-\\w]+)");
     static final Pattern SPRING_CLOUD_DEPENDENCIES_PATTERN =
-        Pattern.compile("(springboot3_org.springframework.cloud:spring-cloud-dependencies;)([.\\-\\w]+)");
+        Pattern.compile("(org.springframework.cloud:spring-cloud-dependencies;)([.\\-\\w]+)");
     private final RestTemplate restTemplate;
     private final String externalDependenciesFileUrl;
     private String externalDependenciesFileContent;
