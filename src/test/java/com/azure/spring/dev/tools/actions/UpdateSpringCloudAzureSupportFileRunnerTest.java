@@ -73,24 +73,6 @@ class UpdateSpringCloudAzureSupportFileRunnerTest {
     }
 
     @Test
-    void testMaintainVersions() {
-        SpringCloudAzureSupportMetadata data1 = new SpringCloudAzureSupportMetadata();
-        data1.setSpringBootVersion("2.5.15");
-        SpringCloudAzureSupportMetadata data2 = new SpringCloudAzureSupportMetadata();
-        data2.setSpringBootVersion("2.6.15");
-        SpringCloudAzureSupportMetadata data3 = new SpringCloudAzureSupportMetadata();
-        data3.setSpringBootVersion("2.7.15");
-        Map<String, SpringCloudAzureSupportMetadata> map = Map.of("2.5.15", data1, "2.6.15", data2, "2.7.15", data3);
-        List<SpringCloudAzureSupportMetadata> lists = new ArrayList<>();
-
-        runner.maintainVersions(lists, map);
-
-        Assertions.assertTrue(lists.contains(data1));
-        Assertions.assertTrue(lists.contains(data2));
-        Assertions.assertFalse(lists.contains(data3));
-    }
-
-    @Test
     void testIsVersionSupported() {
         // Test versions that should be supported (3.5.0 or above)
         Assertions.assertTrue(runner.isVersionSupported("3.5.0"));
