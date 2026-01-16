@@ -64,7 +64,7 @@ jobs:
           cd azure-sdk-for-java
           pip install termcolor
           pip install in_place
-          python ./sdk/spring/scripts/sync_external_dependencies.py -b ${{ env.spring_boot_version }} -sbmvn 3
+          python ./sdk/spring/scripts/sync_external_dependencies.py -b ${{ env.spring_boot_version }} -sbmvn 4
       - name: Update Versions
         if: ${{ env.need_update_version == 'true' }}
         run: |
