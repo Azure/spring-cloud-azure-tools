@@ -87,4 +87,17 @@ class UpdateSpringCloudAzureSupportFileRunnerTest {
         Assertions.assertFalse(runner.isVersionSupported("3.3.13"));
         Assertions.assertFalse(runner.isVersionSupported("2.7.18"));
     }
+
+    @Test
+    void testIsSnapshotOrMilestone() {
+        SpringCloudAzureSupportMetadata metadata = new SpringCloudAzureSupportMetadata();
+        metadata.setSpringBootVersion("3.5.0");
+        Assertions.assertFalse(runner.isSnapshotOrMilestoneOrRC(metadata));
+        metadata.setSpringBootVersion("3.5.0-SNAPSHOT");
+        Assertions.assertTrue(runner.isSnapshotOrMilestoneOrRC(metadata));
+        metadata.setSpringBootVersion("3.5.0-M1");
+        Assertions.assertTrue(runner.isSnapshotOrMilestoneOrRC(metadata));
+        metadata.setSpringBootVersion("3.5.0-RC1");
+        Assertions.assertTrue(runner.isSnapshotOrMilestoneOrRC(metadata));
+    }
 }

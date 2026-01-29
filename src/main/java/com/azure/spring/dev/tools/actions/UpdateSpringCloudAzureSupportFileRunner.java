@@ -71,6 +71,7 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
             .map(CONVERTER::convert)
             .filter(Objects::nonNull)
             .filter(s -> isVersionSupported(s.getSpringBootVersion()))
+            .filter(s -> !isSnapshotOrMilestoneOrRC(s))
             .peek(s -> s.setSpringCloudVersion(findCompatibleSpringCloudVersion(s.getSpringBootVersion())))
             .peek(s -> s.setSupportStatus(findSupportStatus(s.getSpringBootVersion())))
             .peek(s -> activeSpringBootVersions.add(s.getSpringBootVersion()))
@@ -80,6 +81,7 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
             .values()
             .stream()
             .filter(s -> !activeSpringBootVersions.contains(s.getSpringBootVersion()))
+            .filter(s -> !isSnapshotOrMilestoneOrRC(s))
             .peek(s -> s.setCurrent(false))
             .peek(s -> {
                 if (!Objects.equals(s.getSpringBootVersion(), "2.7.18")) { // Special case for 2.7.18
@@ -153,6 +155,19 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
     boolean isVersionSupported(String springBootVersion) {
         Version version = Version.parse(springBootVersion);
         return version.compareTo(Version.parse("3.5.0")) >= 0;
+    }
+
+    /**
+     * Checks if the given metadata represents a snapshot or milestone or RC version.
+     * @param metadata the Spring Cloud Azure support metadata to check
+     * @return true if the version is a snapshot or milestone or RC
+     */
+    boolean isSnapshotOrMilestoneOrRC(SpringCloudAzureSupportMetadata metadata) {
+        String version = metadata.getSpringBootVersion();
+        if (version != null ) {
+            return version.contains("SNAPSHOT") || version.contains("RC") || version.contains("M");
+        }
+        return false;
     }
 
 }
