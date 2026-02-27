@@ -71,16 +71,6 @@ jobs:
         run: |
           cd azure-sdk-for-java
           python ./sdk/spring/scripts/update_changelog.py -b ${{ env.spring_boot_version }} -c ${{ env.spring_cloud_version }}
-      - name: Push Commit
-        if: ${{ env.need_update_version == 'true' }}
-        run: |
-          cd azure-sdk-for-java
-          git config --global user.email github-actions@github.com
-          git config --global user.name github-actions
-          git rm ./sdk/spring/scripts/spring_boot_${{ env.last_spring_boot_version }}_managed_external_dependencies.txt
-          git add -A
-          git commit -m "Upgrade external dependencies to align with Spring Boot ${{ env.spring_boot_version }}"
-          git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git"
       - name: Close Old Pull Requests
         if: ${{ env.need_update_version == 'true' }}
         uses: actions/github-script@v7
@@ -112,6 +102,18 @@ jobs:
                 state: 'closed'
               });
             }
+      - name: Push Commit
+        if: ${{ env.need_update_version == 'true' }}
+        run: |
+          cd azure-sdk-for-java
+          git config --global user.email github-actions@github.com
+          git config --global user.name github-actions
+          git rm ./sdk/spring/scripts/spring_boot_${{ env.last_spring_boot_version }}_managed_external_dependencies.txt
+          git add -A
+          git commit -m "Upgrade external dependencies to align with Spring Boot ${{ env.spring_boot_version }}"
+          # Delete remote branch if it exists
+          git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git" --delete update-spring-dependencies || true
+          git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git"
       - name: Create Pull Request
         if: ${{ env.need_update_version == 'true' }}
         uses: vsoch/pull-request-action@master
