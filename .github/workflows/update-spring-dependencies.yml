@@ -28,10 +28,21 @@ jobs:
             echo "Remote branch doesn't exist"
           else
             echo "Remote branch exists, deleting original branch and closing original PR"
-            # Close existing PR from the branch
-            gh pr list --repo Azure/azure-sdk-for-java --head "${{ secrets.USER }}:update-spring-dependencies" --json number --jq '.[].number' | while read pr_number; do
+            # Close existing PR from the branch using GitHub API
+            pr_numbers=$(curl -s -H "Authorization: token ${{ secrets.ACCESS_TOKEN }}" \
+              "https://api.github.com/repos/Azure/azure-sdk-for-java/pulls?head=${{ secrets.USER }}:update-spring-dependencies&state=open" \
+              | jq -r '.[].number')
+            for pr_number in $pr_numbers; do
               echo "Closing PR #$pr_number"
-              gh pr close "$pr_number" --repo Azure/azure-sdk-for-java  --comment "Closing superseded automated Spring dependency update PR in favor of a new one created by the update-spring-dependencies workflow."
+              curl -s -X PATCH -H "Authorization: token ${{ secrets.ACCESS_TOKEN }}" \
+                -H "Accept: application/vnd.github.v3+json" \
+                -d '{"state":"closed"}' \
+                "https://api.github.com/repos/Azure/azure-sdk-for-java/pulls/$pr_number"
+              # Add a comment explaining the closure
+              curl -s -X POST -H "Authorization: token ${{ secrets.ACCESS_TOKEN }}" \
+                -H "Accept: application/vnd.github.v3+json" \
+                -d '{"body":"Closing superseded automated Spring dependency update PR in favor of a new one created by the update-spring-dependencies workflow."}' \
+                "https://api.github.com/repos/Azure/azure-sdk-for-java/issues/$pr_number/comments"
             done
             # Delete the remote branch
             git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git" --delete update-spring-dependencies
@@ -50,8 +61,6 @@ jobs:
             echo "last_spring_cloud_version=$(sed -n '4p' spring-versions.txt)" >> $GITHUB_ENV
             echo "pr_descriptions=$(cat pr-descriptions.txt)" >> $GITHUB_ENV
           fi
-        env:
-          GH_TOKEN: ${{ secrets.ACCESS_TOKEN }}
       - uses: actions/checkout@v3
         if: ${{ env.need_update_version == 'true' }}
         with:
