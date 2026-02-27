@@ -44,7 +44,7 @@ jobs:
           path: 'azure-sdk-for-java'
           ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
-          fetch-depth: 0
+          fetch-depth: 1
       - name: Generate spring_boot_managed_external_dependencies.txt
         if: ${{ env.need_update_version == 'true' }}
         run: |
@@ -111,9 +111,7 @@ jobs:
           git rm ./sdk/spring/scripts/spring_boot_${{ env.last_spring_boot_version }}_managed_external_dependencies.txt
           git add -A
           git commit -m "Upgrade external dependencies to align with Spring Boot ${{ env.spring_boot_version }}"
-          # Delete remote branch if it exists
-          git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git" --delete update-spring-dependencies || true
-          git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git"
+          git push --force "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git"
       - name: Create Pull Request
         if: ${{ env.need_update_version == 'true' }}
         uses: vsoch/pull-request-action@master
