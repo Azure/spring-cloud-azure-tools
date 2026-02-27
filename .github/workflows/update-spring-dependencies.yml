@@ -24,31 +24,6 @@ jobs:
           mvn exec:java -P github-actions -ntp -Dupdate-spring-dependencies=true
       - name: Confirm Whether to Update
         run: |
-          if [[ $(git ls-remote --heads ${{ secrets.BRANCH_REPO }} update-spring-dependencies | wc -l) -eq 0 ]]; then
-            echo "Remote branch doesn't exist"
-          else
-            echo "Remote branch exists, deleting original branch and closing original PR"
-            # Close existing PR from the branch using GitHub API
-            pr_numbers=$(curl -s -H "Authorization: token ${{ secrets.ACCESS_TOKEN }}" \
-              "https://api.github.com/repos/Azure/azure-sdk-for-java/pulls?head=${{ secrets.USER }}:update-spring-dependencies&state=open" \
-              | jq -r '.[].number')
-            for pr_number in $pr_numbers; do
-              echo "Closing PR #$pr_number"
-              curl -s -X PATCH -H "Authorization: token ${{ secrets.ACCESS_TOKEN }}" \
-                -H "Accept: application/vnd.github.v3+json" \
-                -d '{"state":"closed"}' \
-                "https://api.github.com/repos/Azure/azure-sdk-for-java/pulls/$pr_number"
-              # Add a comment explaining the closure
-              curl -s -X POST -H "Authorization: token ${{ secrets.ACCESS_TOKEN }}" \
-                -H "Accept: application/vnd.github.v3+json" \
-                -d '{"body":"Closing superseded automated Spring dependency update PR in favor of a new one created by the update-spring-dependencies workflow."}' \
-                "https://api.github.com/repos/Azure/azure-sdk-for-java/issues/$pr_number/comments"
-            done
-            # Delete the remote branch
-            git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git" --delete update-spring-dependencies
-            echo "Original branch and PR deleted"
-          fi
-          # Check if update is needed
           if [[ ! -f 'spring-versions.txt' ]]; then
             echo "No new Spring Boot version, No updates!"
           elif grep -q - 'spring-versions.txt'; then
@@ -60,6 +35,7 @@ jobs:
             echo "last_spring_boot_version=$(sed -n '3p' spring-versions.txt)" >> $GITHUB_ENV
             echo "last_spring_cloud_version=$(sed -n '4p' spring-versions.txt)" >> $GITHUB_ENV
             echo "pr_descriptions=$(cat pr-descriptions.txt)" >> $GITHUB_ENV
+            echo "PR_TITLE=External dependencies upgrade - Spring Boot $(sed -n '1p' spring-versions.txt) and Spring Cloud $(sed -n '2p' spring-versions.txt)" >> $GITHUB_ENV
           fi
       - uses: actions/checkout@v3
         if: ${{ env.need_update_version == 'true' }}
@@ -105,13 +81,44 @@ jobs:
           git add -A
           git commit -m "Upgrade external dependencies to align with Spring Boot ${{ env.spring_boot_version }}"
           git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git"
+      - name: Close Old Pull Requests
+        if: ${{ env.need_update_version == 'true' }}
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+          script: |
+            const prTitle = process.env.PR_TITLE;
+            const { data: pullRequests } = await github.rest.pulls.list({
+              owner: 'Azure',
+              repo: 'azure-sdk-for-java',
+              state: 'open'
+            });
+
+            const oldPRs = pullRequests.filter(pr => pr.title === prTitle);
+
+            for (const pr of oldPRs) {
+              console.log(`Closing PR #${pr.number} with comment`);
+              await github.rest.issues.createComment({
+                owner: 'Azure',
+                repo: 'azure-sdk-for-java',
+                issue_number: pr.number,
+                body: 'This PR has been superseded by a newer update. Closing automatically.'
+              });
+
+              await github.rest.pulls.update({
+                owner: 'Azure',
+                repo: 'azure-sdk-for-java',
+                pull_number: pr.number,
+                state: 'closed'
+              });
+            }
       - name: Create Pull Request
         if: ${{ env.need_update_version == 'true' }}
         uses: vsoch/pull-request-action@master
         env:
           PULL_REQUEST_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           PULL_REQUEST_REPOSITORY: Azure/azure-sdk-for-java
-          PULL_REQUEST_TITLE: "External dependencies upgrade - Spring Boot ${{ env.spring_boot_version }} and Spring Cloud ${{ env.spring_cloud_version }}"
+          PULL_REQUEST_TITLE: "${{ env.PR_TITLE }}"
           PULL_REQUEST_FROM_BRANCH: "${{ secrets.USER }}:update-spring-dependencies"
           PULL_REQUEST_BRANCH: "main"
           PULL_REQUEST_BODY: "Updates external dependencies to align with Spring Boot version [${{ env.spring_boot_version }}](https://repo1.maven.org/maven2/org/springframework/boot/spring-boot-dependencies/${{ env.spring_boot_version }}/spring-boot-dependencies-${{ env.spring_boot_version }}.pom) from [${{ env.last_spring_boot_version }}](https://repo1.maven.org/maven2/org/springframework/boot/spring-boot-dependencies/${{ env.last_spring_boot_version }}/spring-boot-dependencies-${{ env.last_spring_boot_version }}.pom) and Spring Cloud version [${{ env.spring_cloud_version }}](https://repo1.maven.org/maven2/org/springframework/cloud/spring-cloud-dependencies/${{ env.spring_cloud_version }}/spring-cloud-dependencies-${{ env.spring_cloud_version }}.pom) from [${{ env.last_spring_cloud_version }}](https://repo1.maven.org/maven2/org/springframework/cloud/spring-cloud-dependencies/${{ env.last_spring_cloud_version }}/spring-cloud-dependencies-${{ env.last_spring_cloud_version }}.pom).\n${{ env.pr_descriptions }}\n\nThis PR is created by GitHub Actions: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
