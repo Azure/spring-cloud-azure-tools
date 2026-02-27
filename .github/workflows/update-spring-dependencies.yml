@@ -31,7 +31,7 @@ jobs:
             # Close existing PR from the branch
             gh pr list --repo Azure/azure-sdk-for-java --head "${{ secrets.USER }}:update-spring-dependencies" --json number --jq '.[].number' | while read pr_number; do
               echo "Closing PR #$pr_number"
-              gh pr close "$pr_number" --repo Azure/azure-sdk-for-java
+              gh pr close "$pr_number" --repo Azure/azure-sdk-for-java  --comment "Closing superseded automated Spring dependency update PR in favor of a new one created by the update-spring-dependencies workflow."
             done
             # Delete the remote branch
             git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git" --delete update-spring-dependencies
