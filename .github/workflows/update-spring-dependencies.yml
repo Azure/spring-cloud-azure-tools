@@ -26,21 +26,32 @@ jobs:
         run: |
           if [[ $(git ls-remote --heads ${{ secrets.BRANCH_REPO }} update-spring-dependencies | wc -l) -eq 0 ]]; then
             echo "Remote branch doesn't exist"
-            if [[ ! -f 'spring-versions.txt' ]]; then
-              echo "No new Spring Boot version, No updates!"
-            elif grep -q - 'spring-versions.txt'; then
-              echo "Has non-GA version, cancel update!"
-            else
-              echo "need_update_version=true" >> $GITHUB_ENV
-              echo "spring_boot_version=$(sed -n '1p' spring-versions.txt)" >> $GITHUB_ENV
-              echo "spring_cloud_version=$(sed -n '2p' spring-versions.txt)" >> $GITHUB_ENV
-              echo "last_spring_boot_version=$(sed -n '3p' spring-versions.txt)" >> $GITHUB_ENV
-              echo "last_spring_cloud_version=$(sed -n '4p' spring-versions.txt)" >> $GITHUB_ENV
-              echo "pr_descriptions=$(cat pr-descriptions.txt)" >> $GITHUB_ENV
-            fi
           else
-              echo "Remote branch exists, cancel commit"
+            echo "Remote branch exists, deleting original branch and closing original PR"
+            # Close existing PR from the branch
+            gh pr list --repo Azure/azure-sdk-for-java --head "${{ secrets.USER }}:update-spring-dependencies" --json number --jq '.[].number' | while read pr_number; do
+              echo "Closing PR #$pr_number"
+              gh pr close "$pr_number" --repo Azure/azure-sdk-for-java
+            done
+            # Delete the remote branch
+            git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git" --delete update-spring-dependencies
+            echo "Original branch and PR deleted"
           fi
+          # Check if update is needed
+          if [[ ! -f 'spring-versions.txt' ]]; then
+            echo "No new Spring Boot version, No updates!"
+          elif grep -q - 'spring-versions.txt'; then
+            echo "Has non-GA version, cancel update!"
+          else
+            echo "need_update_version=true" >> $GITHUB_ENV
+            echo "spring_boot_version=$(sed -n '1p' spring-versions.txt)" >> $GITHUB_ENV
+            echo "spring_cloud_version=$(sed -n '2p' spring-versions.txt)" >> $GITHUB_ENV
+            echo "last_spring_boot_version=$(sed -n '3p' spring-versions.txt)" >> $GITHUB_ENV
+            echo "last_spring_cloud_version=$(sed -n '4p' spring-versions.txt)" >> $GITHUB_ENV
+            echo "pr_descriptions=$(cat pr-descriptions.txt)" >> $GITHUB_ENV
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.ACCESS_TOKEN }}
       - uses: actions/checkout@v3
         if: ${{ env.need_update_version == 'true' }}
         with:
