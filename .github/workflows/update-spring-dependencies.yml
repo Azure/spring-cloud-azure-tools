@@ -30,6 +30,7 @@ jobs:
             echo "Has non-GA version, cancel update!"
           else
             echo "need_update_version=true" >> $GITHUB_ENV
+            echo "update_branch=update-spring-dependencies-$(date +%Y%m%d)-${GITHUB_RUN_ID}" >> $GITHUB_ENV
             echo "spring_boot_version=$(sed -n '1p' spring-versions.txt)" >> $GITHUB_ENV
             echo "spring_cloud_version=$(sed -n '2p' spring-versions.txt)" >> $GITHUB_ENV
             echo "last_spring_boot_version=$(sed -n '3p' spring-versions.txt)" >> $GITHUB_ENV
@@ -51,7 +52,7 @@ jobs:
           echo Updating Spring Boot Dependencies Version: ${{ env.spring_boot_version }}
           echo Updating Spring Cloud Dependencies Version: ${{ env.spring_cloud_version }}
           cd azure-sdk-for-java
-          git checkout -b update-spring-dependencies
+          git checkout -b "${{ env.update_branch }}"
           pip install termcolor
           python ./sdk/spring/scripts/get_spring_boot_managed_external_dependencies.py -b ${{ env.spring_boot_version }} -c ${{ env.spring_cloud_version }}
       - name: Update external_dependencies.txt
@@ -71,37 +72,6 @@ jobs:
         run: |
           cd azure-sdk-for-java
           python ./sdk/spring/scripts/update_changelog.py -b ${{ env.spring_boot_version }} -c ${{ env.spring_cloud_version }}
-      - name: Close Old Pull Requests
-        if: ${{ env.need_update_version == 'true' }}
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.ACCESS_TOKEN }}
-          script: |
-            const prTitle = process.env.PR_TITLE;
-            const { data: pullRequests } = await github.rest.pulls.list({
-              owner: 'Azure',
-              repo: 'azure-sdk-for-java',
-              state: 'open'
-            });
-
-            const oldPRs = pullRequests.filter(pr => pr.title === prTitle);
-
-            for (const pr of oldPRs) {
-              console.log(`Closing PR #${pr.number} with comment`);
-              await github.rest.issues.createComment({
-                owner: 'Azure',
-                repo: 'azure-sdk-for-java',
-                issue_number: pr.number,
-                body: 'This PR has been superseded by a newer update. Closing automatically.'
-              });
-
-              await github.rest.pulls.update({
-                owner: 'Azure',
-                repo: 'azure-sdk-for-java',
-                pull_number: pr.number,
-                state: 'closed'
-              });
-            }
       - name: Push Commit
         if: ${{ env.need_update_version == 'true' }}
         run: |
@@ -111,7 +81,7 @@ jobs:
           git rm ./sdk/spring/scripts/spring_boot_${{ env.last_spring_boot_version }}_managed_external_dependencies.txt
           git add -A
           git commit -m "Upgrade external dependencies to align with Spring Boot ${{ env.spring_boot_version }}"
-          git push --force "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git"
+          git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git" "HEAD:${{ env.update_branch }}"
       - name: Create Pull Request
         if: ${{ env.need_update_version == 'true' }}
         uses: vsoch/pull-request-action@master
@@ -119,7 +89,42 @@ jobs:
           PULL_REQUEST_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           PULL_REQUEST_REPOSITORY: Azure/azure-sdk-for-java
           PULL_REQUEST_TITLE: "${{ env.PR_TITLE }}"
-          PULL_REQUEST_FROM_BRANCH: "${{ secrets.USER }}:update-spring-dependencies"
+          PULL_REQUEST_FROM_BRANCH: "${{ secrets.USER }}:${{ env.update_branch }}"
           PULL_REQUEST_BRANCH: "main"
           PULL_REQUEST_BODY: "Updates external dependencies to align with Spring Boot version [${{ env.spring_boot_version }}](https://repo1.maven.org/maven2/org/springframework/boot/spring-boot-dependencies/${{ env.spring_boot_version }}/spring-boot-dependencies-${{ env.spring_boot_version }}.pom) from [${{ env.last_spring_boot_version }}](https://repo1.maven.org/maven2/org/springframework/boot/spring-boot-dependencies/${{ env.last_spring_boot_version }}/spring-boot-dependencies-${{ env.last_spring_boot_version }}.pom) and Spring Cloud version [${{ env.spring_cloud_version }}](https://repo1.maven.org/maven2/org/springframework/cloud/spring-cloud-dependencies/${{ env.spring_cloud_version }}/spring-cloud-dependencies-${{ env.spring_cloud_version }}.pom) from [${{ env.last_spring_cloud_version }}](https://repo1.maven.org/maven2/org/springframework/cloud/spring-cloud-dependencies/${{ env.last_spring_cloud_version }}/spring-cloud-dependencies-${{ env.last_spring_cloud_version }}.pom).\n${{ env.pr_descriptions }}\n\nThis PR is created by GitHub Actions: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
-          PULL_REQUEST_DRAFT: true
+          PULL_REQUEST_DRAFT: false
+      - name: Comment on Old Pull Requests
+        if: ${{ env.need_update_version == 'true' }}
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+          script: |
+            const prTitle = process.env.PR_TITLE;
+            const { data: pullRequests } = await github.rest.pulls.list({
+              owner: 'Azure',
+              repo: 'azure-sdk-for-java',
+              state: 'open',
+              per_page: 100
+            });
+
+            const matchingPRs = pullRequests
+              .filter(pr => pr.title === prTitle)
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            if (matchingPRs.length <= 1) {
+              console.log('No old pull requests found to comment on.');
+              return;
+            }
+
+            const latestPR = matchingPRs[0];
+            const comment = `A newer update PR has been created: #${latestPR.number} (${latestPR.html_url}). Please track updates there.`;
+
+            for (const pr of matchingPRs.slice(1)) {
+              console.log(`Commenting on old PR #${pr.number}`);
+              await github.rest.issues.createComment({
+                owner: 'Azure',
+                repo: 'azure-sdk-for-java',
+                issue_number: pr.number,
+                body: comment
+              });
+            }
