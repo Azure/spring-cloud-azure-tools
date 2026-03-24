@@ -99,7 +99,6 @@ jobs:
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
           script: |
-            const prTitle = process.env.PR_TITLE;
             const { data: pullRequests } = await github.rest.pulls.list({
               owner: 'Azure',
               repo: 'azure-sdk-for-java',
@@ -107,8 +106,9 @@ jobs:
               per_page: 100
             });
 
+            const prTitlePrefix = 'External dependencies upgrade - Spring Boot';
             const matchingPRs = pullRequests
-              .filter(pr => pr.title === prTitle)
+              .filter(pr => pr.title.startsWith(prTitlePrefix))
               .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
             if (matchingPRs.length <= 1) {
