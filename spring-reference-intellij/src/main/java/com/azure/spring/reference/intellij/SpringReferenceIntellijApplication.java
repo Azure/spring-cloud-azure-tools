@@ -108,7 +108,7 @@ public class SpringReferenceIntellijApplication implements CommandLineRunner {
                 .configure(YAMLGenerator.Feature.MINIMIZE_QUOTES, true)
         );
         try {
-            File resultFile = new File("./spring-reference.yaml");
+            File resultFile = new File("./spring-reference-intellij/spring-reference.yaml");
             if (!resultFile.exists()) {
                 boolean created = resultFile.createNewFile();
                 if (!created) {

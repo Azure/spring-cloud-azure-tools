@@ -550,7 +550,7 @@ spring.cloud.azure.reference:
   compatibilities:
     - artifact-id: spring-cloud-azure-dependencies
       lowest-spring-boot-version: 2.5.0
-      highest-spring-boot-version: 4.0.3
+      highest-spring-boot-version: 4.0.5
       mappings:
         - lowest-spring-boot-version: 2.5.0
           highest-spring-boot-version: 2.5.15
@@ -580,11 +580,11 @@ spring.cloud.azure.reference:
           highest-spring-boot-version: 3.5.12
           version: 6.2.0
         - lowest-spring-boot-version: 4.0.0
-          highest-spring-boot-version: 4.0.3
-          version: 7.1.0
+          highest-spring-boot-version: 4.0.5
+          version: 7.2.0
     - artifact-id: spring-cloud-azure-starter-data-redis-lettuce
       lowest-spring-boot-version: 3.0.0
-      highest-spring-boot-version: 4.0.3
+      highest-spring-boot-version: 4.0.5
       mappings:
         - lowest-spring-boot-version: 3.0.0
           highest-spring-boot-version: 3.0.13
@@ -605,11 +605,11 @@ spring.cloud.azure.reference:
           highest-spring-boot-version: 3.5.12
           version: 6.2.0
         - lowest-spring-boot-version: 4.0.0
-          highest-spring-boot-version: 4.0.3
-          version: 7.1.0
+          highest-spring-boot-version: 4.0.5
+          version: 7.2.0
     - artifact-id: spring-cloud-azure-testcontainers
       lowest-spring-boot-version: 3.0.0
-      highest-spring-boot-version: 4.0.3
+      highest-spring-boot-version: 4.0.5
       mappings:
         - lowest-spring-boot-version: 3.0.0
           highest-spring-boot-version: 3.0.13
@@ -630,11 +630,11 @@ spring.cloud.azure.reference:
           highest-spring-boot-version: 3.5.12
           version: 6.2.0
         - lowest-spring-boot-version: 4.0.0
-          highest-spring-boot-version: 4.0.3
-          version: 7.1.0
+          highest-spring-boot-version: 4.0.5
+          version: 7.2.0
     - artifact-id: spring-cloud-azure-docker-compose
       lowest-spring-boot-version: 3.0.0
-      highest-spring-boot-version: 4.0.3
+      highest-spring-boot-version: 4.0.5
       mappings:
         - lowest-spring-boot-version: 3.0.0
           highest-spring-boot-version: 3.0.13
@@ -655,11 +655,11 @@ spring.cloud.azure.reference:
           highest-spring-boot-version: 3.5.12
           version: 6.2.0
         - lowest-spring-boot-version: 4.0.0
-          highest-spring-boot-version: 4.0.3
-          version: 7.1.0
+          highest-spring-boot-version: 4.0.5
+          version: 7.2.0
   versions:
     - artifact-id: spring-cloud-azure-dependencies
-      ga-version: 7.1.0
+      ga-version: 7.2.0
     - artifact-id: azure-security-keyvault-jca
       ga-version: 2.10.1
 
