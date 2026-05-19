@@ -36,7 +36,7 @@ class UpdateSpringCloudAzureSupportFileRunnerTest {
         when(this.springInitializrMetadataReader.getCompatibleSpringBootVersions("spring-cloud")).thenReturn(ranges);
         when(this.azureSupportMetadataReader.getAzureSupportMetadata()).thenReturn(List.of(new SpringCloudAzureSupportMetadata()));
         runner = new UpdateSpringCloudAzureSupportFileRunner(null, springInitializrMetadataReader,
-            azureSupportMetadataReader, null);
+            azureSupportMetadataReader, null, false);
     }
 
     @Test
@@ -69,7 +69,7 @@ class UpdateSpringCloudAzureSupportFileRunnerTest {
 
         runner.setNewStatus(lists);
 
-        Assertions.assertEquals(lists.get(0).getSupportStatus(), SupportStatus.TODO);
+        Assertions.assertEquals(lists.get(0).getSupportStatus(), SupportStatus.SUPPORTED);
     }
 
     @Test
@@ -99,5 +99,21 @@ class UpdateSpringCloudAzureSupportFileRunnerTest {
         Assertions.assertTrue(runner.isSnapshotOrMilestoneOrRC(metadata));
         metadata.setSpringBootVersion("3.5.0-RC1");
         Assertions.assertTrue(runner.isSnapshotOrMilestoneOrRC(metadata));
+    }
+
+    @Test
+    void testIsSnapshotOrMilestoneWhenRcIncluded() {
+        UpdateSpringCloudAzureSupportFileRunner runnerWithRc = new UpdateSpringCloudAzureSupportFileRunner(null,
+            springInitializrMetadataReader, azureSupportMetadataReader, null, true);
+
+        SpringCloudAzureSupportMetadata metadata = new SpringCloudAzureSupportMetadata();
+        metadata.setSpringBootVersion("3.5.0-RC1");
+        Assertions.assertFalse(runnerWithRc.isSnapshotOrMilestoneOrRC(metadata));
+
+        metadata.setSpringBootVersion("3.5.0-SNAPSHOT");
+        Assertions.assertTrue(runnerWithRc.isSnapshotOrMilestoneOrRC(metadata));
+
+        metadata.setSpringBootVersion("3.5.0-M1");
+        Assertions.assertTrue(runnerWithRc.isSnapshotOrMilestoneOrRC(metadata));
     }
 }

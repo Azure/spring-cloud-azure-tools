@@ -1,0 +1,129 @@
+name: Test Spring Boot RC Version
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'Azure/spring-cloud-azure-tools'
+      - name: Generate Version File
+        run: |
+          mvn compile
+          mvn exec:java -P github-actions -ntp -Dupdate-spring-dependencies=true
+      - name: Generate Spring Cloud Azure Support File
+        run: |
+          mvn compile
+          mvn exec:java -P github-actions -ntp -Dupdate-spring-cloud-azure-support-file=true -Dupdate-spring-cloud-azure-support-file.include-rc=true
+      - name: Confirm Whether to Update
+        run: |
+          if [[ ! -f 'spring-versions.txt' ]]; then
+            echo "No new Spring Boot version, No updates!"
+          elif grep -q -- "-RC" spring-versions.txt; then
+            echo "Has RC version, create PR to test!"
+            mapfile -t versions < spring-versions.txt
+            {
+              echo "need_update_version=true"
+              echo "update_branch=update-spring-dependencies-$(date +%Y%m%d)-${GITHUB_RUN_ID}"
+              echo "spring_boot_version=${versions[0]}"
+              echo "spring_cloud_version=${versions[1]}"
+              echo "pr_descriptions=$(<pr-descriptions.txt)"
+              echo "PR_TITLE=Test Spring Boot RC version ${versions[0]} and Spring Cloud ${versions[1]}"
+            } >> $GITHUB_ENV
+          else
+            echo "No RC version,cancel update!"
+          fi
+      - uses: actions/checkout@v3
+        if: ${{ env.need_update_version == 'true' }}
+        with:
+          repository: 'Azure/azure-sdk-for-java'
+          path: 'azure-sdk-for-java'
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+          fetch-depth: 1
+      - name: Generate spring_boot_managed_external_dependencies.txt
+        if: ${{ env.need_update_version == 'true' }}
+        run: |
+          echo Updating Spring Boot Dependencies Version: ${{ env.spring_boot_version }}
+          echo Updating Spring Cloud Dependencies Version: ${{ env.spring_cloud_version }}
+          cd azure-sdk-for-java
+          git checkout -b "${{ env.update_branch }}"
+          pip install termcolor
+          python ./sdk/spring/scripts/get_spring_boot_managed_external_dependencies.py -b ${{ env.spring_boot_version }} -c ${{ env.spring_cloud_version }}
+      - name: Update external_dependencies.txt
+        if: ${{ env.need_update_version == 'true' }}
+        run: |
+          cd azure-sdk-for-java
+          pip install termcolor
+          pip install in_place
+          python ./sdk/spring/scripts/sync_external_dependencies.py -b ${{ env.spring_boot_version }} -sbmvn 4
+      - name: Update Versions
+        if: ${{ env.need_update_version == 'true' }}
+        run: |
+          cd azure-sdk-for-java
+          python ./eng/versioning/update_versions.py --sr
+      - name: Update ChangeLog
+        if: ${{ env.need_update_version == 'true' }}
+        run: |
+          cd azure-sdk-for-java
+          python ./sdk/spring/scripts/update_changelog.py -b ${{ env.spring_boot_version }} -c ${{ env.spring_cloud_version }}
+      - name: Push Commit
+        if: ${{ env.need_update_version == 'true' }}
+        run: |
+          cd azure-sdk-for-java
+          git config --global user.email github-actions@github.com
+          git config --global user.name github-actions
+          git rm ./sdk/spring/scripts/spring_boot_${{ env.last_spring_boot_version }}_managed_external_dependencies.txt
+          git add -A
+          git commit -m "Upgrade external dependencies to align with Spring Boot ${{ env.spring_boot_version }}"
+          sed -i "s/NONE_SUPPORTED_SPRING_CLOUD_VERSION/${spring_cloud_version}/g" ../spring-cloud-azure-supported-spring.json
+          cp -f ../spring-cloud-azure-supported-spring.json sdk/spring/pipeline
+          git add sdk/spring/pipeline/spring-cloud-azure-supported-spring.json
+          git commit -m "Upgrade spring-cloud-azure-supported-spring"
+          git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git" "HEAD:${{ env.update_branch }}"
+      - name: Create Pull Request
+        if: ${{ env.need_update_version == 'true' }}
+        uses: vsoch/pull-request-action@master
+        env:
+          PULL_REQUEST_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          PULL_REQUEST_REPOSITORY: Azure/azure-sdk-for-java
+          PULL_REQUEST_TITLE: "${{ env.PR_TITLE }}"
+          PULL_REQUEST_FROM_BRANCH: "${{ secrets.USER }}:${{ env.update_branch }}"
+          PULL_REQUEST_BRANCH: "main"
+          PULL_REQUEST_BODY: "Test Spring Boot RC version [${{ env.spring_boot_version }}](https://repo1.maven.org/maven2/org/springframework/boot/spring-boot-dependencies/${{ env.spring_boot_version }}/spring-boot-dependencies-${{ env.spring_boot_version }}.pom) and Spring Cloud version [${{ env.spring_cloud_version }}](https://repo1.maven.org/maven2/org/springframework/cloud/spring-cloud-dependencies/${{ env.spring_cloud_version }}/spring-cloud-dependencies-${{ env.spring_cloud_version }}.pom).\n${{ env.pr_descriptions }}\n\nThis PR is created by GitHub Actions: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
+          PULL_REQUEST_DRAFT: true
+      - name: Comment on Pull Requests
+        if: ${{ env.need_update_version == 'true' }}
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+          script: |
+            const { data: pullRequests } = await github.rest.pulls.list({
+              owner: 'Azure',
+              repo: 'azure-sdk-for-java',
+              state: 'open',
+              per_page: 100
+            });
+
+            const prTitlePrefix = 'Test Spring Boot RC version';
+            const matchingPRs = pullRequests
+              .filter(pr => pr.title.startsWith(prTitlePrefix))
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            if (matchingPRs.length < 1) {
+              console.log('No matched pull requests found to comment on.');
+              return;
+            }
+
+            const latestPR = matchingPRs[0];
+            const comment = `/azp run java - spring - tests`;
+            
+            console.log(`Commenting on test PR #${latestPR.number}`);
+            await github.rest.issues.createComment({
+                owner: 'Azure',
+                repo: 'azure-sdk-for-java',
+                issue_number: latestPR.number,
+                body: comment
+            });
