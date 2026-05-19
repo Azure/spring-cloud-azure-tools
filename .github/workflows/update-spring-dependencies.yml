@@ -93,7 +93,7 @@ jobs:
           PULL_REQUEST_BRANCH: "main"
           PULL_REQUEST_BODY: "Updates external dependencies to align with Spring Boot version [${{ env.spring_boot_version }}](https://repo1.maven.org/maven2/org/springframework/boot/spring-boot-dependencies/${{ env.spring_boot_version }}/spring-boot-dependencies-${{ env.spring_boot_version }}.pom) from [${{ env.last_spring_boot_version }}](https://repo1.maven.org/maven2/org/springframework/boot/spring-boot-dependencies/${{ env.last_spring_boot_version }}/spring-boot-dependencies-${{ env.last_spring_boot_version }}.pom) and Spring Cloud version [${{ env.spring_cloud_version }}](https://repo1.maven.org/maven2/org/springframework/cloud/spring-cloud-dependencies/${{ env.spring_cloud_version }}/spring-cloud-dependencies-${{ env.spring_cloud_version }}.pom) from [${{ env.last_spring_cloud_version }}](https://repo1.maven.org/maven2/org/springframework/cloud/spring-cloud-dependencies/${{ env.last_spring_cloud_version }}/spring-cloud-dependencies-${{ env.last_spring_cloud_version }}.pom).\n${{ env.pr_descriptions }}\n\nThis PR is created by GitHub Actions: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
           PULL_REQUEST_DRAFT: false
-      - name: Comment on Old Pull Requests
+      - name: Comment on Pull Requests
         if: ${{ env.need_update_version == 'true' }}
         uses: actions/github-script@v7
         with:
@@ -117,7 +117,17 @@ jobs:
             }
 
             const latestPR = matchingPRs[0];
-            const comment = `A newer update PR has been created: #${latestPR.number} (${latestPR.html_url}). Please track updates there.`;
+            const comment1 = `/azp run java - spring - tests`;
+            
+            console.log(`Commenting on latest PR #${latestPR.number}`);
+            await github.rest.issues.createComment({
+                owner: 'Azure',
+                repo: 'azure-sdk-for-java',
+                issue_number: latestPR.number,
+                body: comment1
+            });
+            
+            const comment2 = `A newer update PR has been created: #${latestPR.number} (${latestPR.html_url}). Please track updates there.`;
 
             for (const pr of matchingPRs.slice(1)) {
               console.log(`Commenting on old PR #${pr.number}`);
@@ -125,6 +135,6 @@ jobs:
                 owner: 'Azure',
                 repo: 'azure-sdk-for-java',
                 issue_number: pr.number,
-                body: comment
+                body: comment2
               });
             }
