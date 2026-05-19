@@ -2,6 +2,7 @@ package com.azure.spring.dev.tools.actions;
 
 import com.azure.spring.dev.tools.dependency.metadata.maven.Version;
 import com.azure.spring.dev.tools.dependency.metadata.maven.VersionRange;
+import com.azure.spring.dev.tools.dependency.metadata.spring.ReleaseStatus;
 import com.azure.spring.dev.tools.dependency.support.SpringBootReleaseNotesReader;
 import com.azure.spring.dev.tools.dependency.support.SpringCloudAzureCurrentVersionReader;
 import com.azure.spring.dev.tools.dependency.support.SpringInitializrMetadataReader;
@@ -46,21 +47,38 @@ public class UpdateSpringDependenciesRunner implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         LOGGER.info("---------- starting {} ----------", UpdateSpringDependenciesRunner.class.getSimpleName());
-        String latestSpringBootVersion = metadataReader.getCurrentVersion();
+        String latestSpringBootVersion = metadataReader.getCurrentVersion(ReleaseStatus.GENERAL_AVAILABILITY);
+        String RCSpringBootVersion = metadataReader.getCurrentVersion(ReleaseStatus.PRERELEASE);
         String azureSupportedSpringBootVersion = azureCurrentVersionReader.getCurrentSupportedSpringBootVersion();
         String azureSupportedSpringCloudVersion = azureCurrentVersionReader.getCurrentSupportedSpringCloudVersion();
-        String releaseNotesContents = springBootReleaseNotesReader.getReleaseNotes(latestSpringBootVersion);
-        if (!azureSupportedSpringBootVersion.equals(latestSpringBootVersion)) {
+        String releaseNotesContents;
+        String latestSpringBootMatchedSpringCloudVersion;
+        if (!azureSupportedSpringBootVersion.equals(latestSpringBootVersion) || !azureSupportedSpringBootVersion.equals(RCSpringBootVersion)) {
             try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("spring-versions.txt"))) {
-                bufferedWriter.write(latestSpringBootVersion);
-                bufferedWriter.newLine();
-                bufferedWriter.write(springCloudCompatibleSpringBootVersionRanges
-                    .entrySet()
-                    .stream()
-                    .filter(entry -> entry.getValue().match(Version.parse(latestSpringBootVersion)))
-                    .map(Map.Entry::getKey)
-                    .findFirst()
-                    .get());
+                latestSpringBootMatchedSpringCloudVersion = springCloudCompatibleSpringBootVersionRanges
+                        .entrySet()
+                        .stream()
+                        .filter(entry -> entry.getValue().match(Version.parse(latestSpringBootVersion)))
+                        .map(Map.Entry::getKey)
+                        .findFirst()
+                        .get();
+                if (!azureSupportedSpringBootVersion.equals(latestSpringBootVersion)) {
+                    releaseNotesContents = springBootReleaseNotesReader.getReleaseNotes(latestSpringBootVersion);
+                    bufferedWriter.write(latestSpringBootVersion);
+                    bufferedWriter.newLine();
+                    bufferedWriter.write(latestSpringBootMatchedSpringCloudVersion);
+                } else {
+                    releaseNotesContents = springBootReleaseNotesReader.getReleaseNotes(RCSpringBootVersion);
+                    bufferedWriter.write(RCSpringBootVersion);
+                    bufferedWriter.newLine();
+                    bufferedWriter.write(springCloudCompatibleSpringBootVersionRanges
+                            .entrySet()
+                            .stream()
+                            .filter(entry -> entry.getValue().match(Version.parse(RCSpringBootVersion)))
+                            .map(Map.Entry::getKey)
+                            .findFirst()
+                            .orElse(latestSpringBootMatchedSpringCloudVersion));
+                }
                 bufferedWriter.newLine();
                 bufferedWriter.write(azureSupportedSpringBootVersion);
                 bufferedWriter.newLine();
