@@ -112,20 +112,18 @@ jobs:
               .filter(pr => pr.title.startsWith(prTitlePrefix))
               .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-            if (matchingPRs.length <= 1) {
-              console.log('No old pull requests found to comment on.');
+            if (matchingPRs.length < 1) {
+              console.log('No matched pull requests found to comment on.');
               return;
             }
 
             const latestPR = matchingPRs[0];
             const comment = `/azp run java - spring - tests`;
-
-            for (const pr of matchingPRs.slice(1)) {
-              console.log(`Commenting on test PR #${pr.number}`);
-              await github.rest.issues.createComment({
+            
+            console.log(`Commenting on test PR #${latestPR.number}`);
+            await github.rest.issues.createComment({
                 owner: 'Azure',
                 repo: 'azure-sdk-for-java',
-                issue_number: pr.number,
+                issue_number: latestPR.number,
                 body: comment
-              });
-            }
+            });
