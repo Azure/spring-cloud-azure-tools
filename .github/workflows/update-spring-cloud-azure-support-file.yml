@@ -102,3 +102,26 @@ jobs:
           PULL_REQUEST_FROM_BRANCH: "${{ secrets.USER }}:${{ env.BRANCH_NAME }}"
           PULL_REQUEST_BRANCH: "main"
           PULL_REQUEST_BODY: "${{ env.PULL_REQUEST_BODY }}"
+      - name: Comment on Pull Requests
+        if: ${{ env.NEED_UPDATE_FILE == 'true' }}
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+          script: |
+            const prTitle = process.env.PR_TITLE;
+            const { data: pullRequests } = await github.rest.pulls.list({
+              owner: 'Azure',
+              repo: 'azure-sdk-for-java',
+              state: 'open'
+            });
+            
+            const latestPR = pullRequests.filter(pr => pr.title === prTitle);
+            const comment1 = `/azp run java - spring - tests`;
+            
+            console.log(`Commenting on latest PR #${latestPR.number}`);
+            await github.rest.issues.createComment({
+              owner: 'Azure',
+              repo: 'azure-sdk-for-java',
+              issue_number: latestPR.number,
+              body: comment1
+            });

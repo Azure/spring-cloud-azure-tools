@@ -75,7 +75,6 @@ jobs:
           cd azure-sdk-for-java
           git config --global user.email github-actions@github.com
           git config --global user.name github-actions
-          git rm ./sdk/spring/scripts/spring_boot_${{ env.last_spring_boot_version }}_managed_external_dependencies.txt
           git add -A
           git commit -m "Upgrade external dependencies to align with Spring Boot ${{ env.spring_boot_version }}"
           sed -i "s/NONE_SUPPORTED_SPRING_CLOUD_VERSION/${spring_cloud_version}/g" ../spring-cloud-azure-supported-spring.json
