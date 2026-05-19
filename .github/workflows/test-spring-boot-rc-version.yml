@@ -16,7 +16,7 @@ jobs:
       - name: Generate Spring Cloud Azure Support File
         run: |
           mvn compile
-          mvn exec:java -P github-actions -ntp -Dupdate-spring-cloud-azure-support-file=true
+          mvn exec:java -P github-actions -ntp -Dupdate-spring-cloud-azure-support-file=true -Dupdate-spring-cloud-azure-support-file.include-rc=true
       - name: Confirm Whether to Update
         run: |
           if [[ ! -f 'spring-versions.txt' ]]; then

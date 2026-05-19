@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -46,13 +47,17 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
     private final Map<String, VersionRange> springCloudCompatibleSpringBootVersionRanges;
     private final Map<String, SpringCloudAzureSupportMetadata> azureSupportMetadataMap;
     private final ObjectMapper objectMapper;
+    private final boolean includeRc;
 
     public UpdateSpringCloudAzureSupportFileRunner(SpringProjectMetadataReader springProjectMetadataReader,
                                                    SpringInitializrMetadataReader springInitializrMetadataReader,
                                                    SpringCloudAzureSupportMetadataReader azureSupportMetadataReader,
-                                                   ObjectMapper objectMapper) {
+                                                   ObjectMapper objectMapper,
+                                                   @Value("${update-spring-cloud-azure-support-file.include-rc:false}")
+                                                   boolean includeRc) {
         this.springProjectMetadataReader = springProjectMetadataReader;
         this.objectMapper = objectMapper;
+        this.includeRc = includeRc;
         this.springCloudCompatibleSpringBootVersionRanges =
             springInitializrMetadataReader.getCompatibleSpringBootVersions("spring-cloud");
         this.azureSupportMetadataMap = azureSupportMetadataReader.getAzureSupportMetadata().stream().collect(
@@ -106,7 +111,9 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
     void setNewStatus(List<SpringCloudAzureSupportMetadata> result) {
         for (SpringCloudAzureSupportMetadata metadata : result) {
             if (metadata.getSupportStatus() == null) {
-                if (metadata.getReleaseStatus().equals(ReleaseStatus.GENERAL_AVAILABILITY)) {
+                ReleaseStatus status = metadata.getReleaseStatus();
+                //ReleaseStatus.PRERELEASE only work when update-spring-cloud-azure-support-file.include-rc enabled
+                if (status.equals(ReleaseStatus.GENERAL_AVAILABILITY) || status.equals(ReleaseStatus.PRERELEASE)) {
                     metadata.setSupportStatus(SupportStatus.SUPPORTED);
                 } else {
                     metadata.setSupportStatus(SupportStatus.TODO);
@@ -165,7 +172,9 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
     boolean isSnapshotOrMilestoneOrRC(SpringCloudAzureSupportMetadata metadata) {
         String version = metadata.getSpringBootVersion();
         if (version != null ) {
-            return version.contains("SNAPSHOT") || version.contains("RC") || version.contains("M");
+            boolean snapshotOrMilestone = version.contains("SNAPSHOT") || version.contains("M");
+            boolean rc = version.contains("RC");
+            return snapshotOrMilestone || (rc && !includeRc);
         }
         return false;
     }
