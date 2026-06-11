@@ -106,6 +106,7 @@ jobs:
               });
             }
       - name: Create Pull Request
+        id: create_pr
         if: ${{ env.NEED_UPDATE_FILE == 'true' }}
         uses: vsoch/pull-request-action@master
         env:
@@ -121,29 +122,19 @@ jobs:
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
           script: |
-            const prTitle = process.env.PR_TITLE;
-            const { data: pullRequests } = await github.rest.pulls.list({
-              owner: 'Azure',
-              repo: 'azure-sdk-for-java',
-              state: 'open'
-            });
-            
-            const matchingPRs = pullRequests
-              .filter(pr => pr.title === prTitle)
-              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            const prNumber = '${{ steps.create_pr.outputs.pull_request_number }}';
 
-            if (matchingPRs.length < 1) {
-              console.log('No matching pull request found to comment on.');
+            if (!prNumber) {
+              console.log('No pull request was created, nothing to comment on.');
               return;
             }
 
-            const latestPR = matchingPRs[0];
             const comment1 = `/azp run java - spring - tests`;
 
-            console.log(`Commenting on latest PR #${latestPR.number}`);
+            console.log(`Commenting on PR #${prNumber}`);
             await github.rest.issues.createComment({
               owner: 'Azure',
               repo: 'azure-sdk-for-java',
-              issue_number: latestPR.number,
+              issue_number: prNumber,
               body: comment1
             });
