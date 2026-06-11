@@ -128,9 +128,18 @@ jobs:
               state: 'open'
             });
             
-            const latestPR = pullRequests.filter(pr => pr.title === prTitle);
+            const matchingPRs = pullRequests
+              .filter(pr => pr.title === prTitle)
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            if (matchingPRs.length < 1) {
+              console.log('No matching pull request found to comment on.');
+              return;
+            }
+
+            const latestPR = matchingPRs[0];
             const comment1 = `/azp run java - spring - tests`;
-            
+
             console.log(`Commenting on latest PR #${latestPR.number}`);
             await github.rest.issues.createComment({
               owner: 'Azure',
