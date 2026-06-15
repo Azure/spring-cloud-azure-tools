@@ -57,7 +57,16 @@ jobs:
           cd azure-sdk-for-java
           TODAY=$(date +%Y-%m-%d)
           TIMELINE_FILE=docs/spring/Spring-Cloud-Azure-Timeline.md
-          SUPPORTED_LINES=$(jq -r '.[] | select(.supportStatus == "SUPPORTED") | "   - spring-boot-dependencies:\(.["spring-boot-version"]) and spring-cloud-dependencies:\(.["spring-cloud-version"])."' sdk/spring/pipeline/spring-cloud-azure-supported-spring.json)
+          # The compatibility tests only run the SUPPORTED versions whose Spring Boot
+          # major version matches the current one (see compatibility_update_supported_version_matrix_json.py),
+          # so only list those here.
+          SUPPORTED_LINES=$(jq -r '
+            (map(select(.current == true)) | .[0]["spring-boot-version"] | split(".")[0]) as $major
+            | .[]
+            | select(.supportStatus == "SUPPORTED")
+            | select(.["spring-boot-version"] | startswith($major + "."))
+            | "   - spring-boot-dependencies:\(.["spring-boot-version"]) and spring-cloud-dependencies:\(.["spring-cloud-version"])."
+          ' sdk/spring/pipeline/spring-cloud-azure-supported-spring.json)
           NEW_ENTRY=$(printf ' - **%s**: In "java - spring - compatibility - tests" pipeline, run unit tests:\n%s' "$TODAY" "$SUPPORTED_LINES")
           awk -v entry="$NEW_ENTRY" '
             { print }
