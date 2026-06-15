@@ -10,10 +10,46 @@ on:
     # * is a special character in YAML so you have to quote this string
     - cron:  '0 0 * * *'
   workflow_dispatch:
+env:
+  PR_TITLE_PREFIX: 'External dependencies upgrade - Spring Boot'
 jobs:
-  build:
-    name: Build
+  check:
+    name: Check for Open Spring Boot Upgrade PRs
     runs-on: ubuntu-latest
+    outputs:
+      skip_pipeline: ${{ steps.check_prs.outputs.skip_pipeline }}
+    steps:
+      - name: Check for Open Spring Boot Upgrade PRs
+        id: check_prs
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+          script: |
+            const prTitlePrefix = process.env.PR_TITLE_PREFIX;
+            const { data: pullRequests } = await github.rest.pulls.list({
+              owner: 'Azure',
+              repo: 'azure-sdk-for-java',
+              state: 'open',
+              per_page: 100
+            });
+
+            const openPRs = pullRequests.filter(pr => pr.title.startsWith(prTitlePrefix));
+
+            if (openPRs.length > 0) {
+              console.log(`Found ${openPRs.length} open PR(s) with title starting with "${prTitlePrefix}". Skipping the pipeline.`);
+              for (const pr of openPRs) {
+                console.log(`  - PR #${pr.number}: ${pr.title}`);
+              }
+              core.setOutput('skip_pipeline', 'true');
+            } else {
+              console.log('No open Spring Boot upgrade PR found. Continuing the pipeline.');
+              core.setOutput('skip_pipeline', 'false');
+            }
+  update:
+    name: Update Dependencies and Create PR
+    runs-on: ubuntu-latest
+    needs: check
+    if: ${{ needs.check.outputs.skip_pipeline != 'true' }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -36,7 +72,7 @@ jobs:
             echo "last_spring_boot_version=$(sed -n '3p' spring-versions.txt)" >> $GITHUB_ENV
             echo "last_spring_cloud_version=$(sed -n '4p' spring-versions.txt)" >> $GITHUB_ENV
             echo "pr_descriptions=$(cat pr-descriptions.txt)" >> $GITHUB_ENV
-            echo "PR_TITLE=External dependencies upgrade - Spring Boot $(sed -n '1p' spring-versions.txt) and Spring Cloud $(sed -n '2p' spring-versions.txt)" >> $GITHUB_ENV
+            echo "PR_TITLE=${PR_TITLE_PREFIX} $(sed -n '1p' spring-versions.txt) and Spring Cloud $(sed -n '2p' spring-versions.txt)" >> $GITHUB_ENV
           fi
       - uses: actions/checkout@v3
         if: ${{ env.need_update_version == 'true' }}
@@ -83,6 +119,7 @@ jobs:
           git commit -m "Upgrade external dependencies to align with Spring Boot ${{ env.spring_boot_version }}"
           git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git" "HEAD:${{ env.update_branch }}"
       - name: Create Pull Request
+        id: create_pr
         if: ${{ env.need_update_version == 'true' }}
         uses: vsoch/pull-request-action@master
         env:
@@ -99,42 +136,19 @@ jobs:
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
           script: |
-            const { data: pullRequests } = await github.rest.pulls.list({
-              owner: 'Azure',
-              repo: 'azure-sdk-for-java',
-              state: 'open',
-              per_page: 100
-            });
+            const prNumber = '${{ steps.create_pr.outputs.pull_request_number }}';
 
-            const prTitlePrefix = 'External dependencies upgrade - Spring Boot';
-            const matchingPRs = pullRequests
-              .filter(pr => pr.title.startsWith(prTitlePrefix))
-              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-            if (matchingPRs.length <= 1) {
-              console.log('No old pull requests found to comment on.');
+            if (!prNumber) {
+              console.log('No pull request was created, nothing to comment on.');
               return;
             }
 
-            const latestPR = matchingPRs[0];
             const comment1 = `/azp run java - spring - tests`;
-            
-            console.log(`Commenting on latest PR #${latestPR.number}`);
-            await github.rest.issues.createComment({
-                owner: 'Azure',
-                repo: 'azure-sdk-for-java',
-                issue_number: latestPR.number,
-                body: comment1
-            });
-            
-            const comment2 = `A newer update PR has been created: #${latestPR.number} (${latestPR.html_url}). Please track updates there.`;
 
-            for (const pr of matchingPRs.slice(1)) {
-              console.log(`Commenting on old PR #${pr.number}`);
-              await github.rest.issues.createComment({
-                owner: 'Azure',
-                repo: 'azure-sdk-for-java',
-                issue_number: pr.number,
-                body: comment2
-              });
-            }
+            console.log(`Commenting on PR #${prNumber}`);
+            await github.rest.issues.createComment({
+              owner: 'Azure',
+              repo: 'azure-sdk-for-java',
+              issue_number: prNumber,
+              body: comment1
+            });

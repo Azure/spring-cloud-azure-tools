@@ -4,9 +4,41 @@ on:
     # * is a special character in YAML so you have to quote this string
     - cron:  '0 0 * * *'
   workflow_dispatch:
+env:
+  PR_TITLE: "Update Spring Boot and Spring Cloud versions for the Spring compatibility tests"
 jobs:
-  build:
-    name: Build
+  check-open-pr:
+    name: Check Open Pull Request
+    runs-on: ubuntu-latest
+    outputs:
+      has_open_pr: ${{ steps.check.outputs.has_open_pr }}
+    steps:
+      - name: Check for Existing Open Pull Request
+        id: check
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+          script: |
+            const prTitle = process.env.PR_TITLE;
+            const { data: pullRequests } = await github.rest.pulls.list({
+              owner: 'Azure',
+              repo: 'azure-sdk-for-java',
+              state: 'open'
+            });
+
+            const openPRs = pullRequests.filter(pr => pr.title === prTitle);
+
+            if (openPRs.length > 0) {
+              console.log(`Found ${openPRs.length} open PR(s) with title "${prTitle}". Skipping pipeline.`);
+              core.setOutput('has_open_pr', 'true');
+            } else {
+              console.log('No open PR found with the target title. Proceeding with pipeline.');
+              core.setOutput('has_open_pr', 'false');
+            }
+  update:
+    name: Update Support File and Create PR
+    needs: check-open-pr
+    if: ${{ needs.check-open-pr.outputs.has_open_pr == 'false' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -26,11 +58,9 @@ jobs:
       - name: Set Branch Name with Timestamp
         run: |
           TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-          PR_TITLE="Update Spring Boot and Spring Cloud versions for the Spring compatibility tests"
           GITHUB_ACTION_URL="https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
 
           echo "BRANCH_NAME=update-spring-cloud-azure-support-file-${TIMESTAMP}" >> $GITHUB_ENV
-          echo "PR_TITLE=${PR_TITLE}" >> $GITHUB_ENV
 
           echo "COMMIT_MESSAGE<<EOF" >> $GITHUB_ENV
           echo "${PR_TITLE}." >> $GITHUB_ENV
@@ -83,37 +113,6 @@ jobs:
           git add docs/spring/Spring-Cloud-Azure-Timeline.md
           git commit -m "${{ env.COMMIT_MESSAGE }}"
           git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git"
-      - name: Close Old Pull Requests
-        if: ${{ env.NEED_UPDATE_FILE == 'true' }}
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.ACCESS_TOKEN }}
-          script: |
-            const prTitle = process.env.PR_TITLE;
-            const { data: pullRequests } = await github.rest.pulls.list({
-              owner: 'Azure',
-              repo: 'azure-sdk-for-java',
-              state: 'open'
-            });
-
-            const oldPRs = pullRequests.filter(pr => pr.title === prTitle);
-
-            for (const pr of oldPRs) {
-              console.log(`Closing PR #${pr.number} with comment`);
-              await github.rest.issues.createComment({
-                owner: 'Azure',
-                repo: 'azure-sdk-for-java',
-                issue_number: pr.number,
-                body: 'This PR has been superseded by a newer update. Closing automatically.'
-              });
-
-              await github.rest.pulls.update({
-                owner: 'Azure',
-                repo: 'azure-sdk-for-java',
-                pull_number: pr.number,
-                state: 'closed'
-              });
-            }
       - name: Create Pull Request
         id: create_pr
         if: ${{ env.NEED_UPDATE_FILE == 'true' }}

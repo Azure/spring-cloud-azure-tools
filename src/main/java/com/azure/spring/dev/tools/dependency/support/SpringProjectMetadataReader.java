@@ -1,6 +1,7 @@
 package com.azure.spring.dev.tools.dependency.support;
 
 import com.azure.spring.dev.tools.dependency.configuration.DependencyProperties;
+import com.azure.spring.dev.tools.dependency.metadata.maven.Version;
 import com.azure.spring.dev.tools.dependency.metadata.maven.VersionParser;
 import com.azure.spring.dev.tools.dependency.metadata.spring.ProjectRelease;
 import com.azure.spring.dev.tools.dependency.metadata.spring.ReleaseStatus;
@@ -10,6 +11,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Read a Spring project's metadata from https://spring.io/project_metadata endpoint.
@@ -39,17 +41,16 @@ public class SpringProjectMetadataReader {
         return metadata.getProjectReleases();
     }
 
-    public String getCurrentVersion(ReleaseStatus releaseStatus) {
+    public Optional<String> getCurrentVersion(ReleaseStatus releaseStatus) {
         return getProjectReleases()
             .stream()
             .filter(p -> p.getReleaseStatus().equals(releaseStatus))
             .filter(p -> p.getVersion().startsWith("4"))
             .map(ProjectRelease::getVersion)
             .map(VersionParser.DEFAULT::parse)
-            .sorted(Comparator.reverseOrder())
             .filter(Objects::nonNull)
+            .sorted(Comparator.reverseOrder())
             .findFirst()
-            .get()
-            .toString();
+            .map(Version::toString);
     }
 }

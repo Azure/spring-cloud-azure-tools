@@ -47,13 +47,17 @@ public class UpdateSpringDependenciesRunner implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         LOGGER.info("---------- starting {} ----------", UpdateSpringDependenciesRunner.class.getSimpleName());
-        String latestSpringBootVersion = metadataReader.getCurrentVersion(ReleaseStatus.GENERAL_AVAILABILITY);
-        String RCSpringBootVersion = metadataReader.getCurrentVersion(ReleaseStatus.PRERELEASE);
+        String latestSpringBootVersion = metadataReader.getCurrentVersion(ReleaseStatus.GENERAL_AVAILABILITY).orElse(null);
+        String RCSpringBootVersion = metadataReader.getCurrentVersion(ReleaseStatus.PRERELEASE).orElse(null);
         String azureSupportedSpringBootVersion = azureCurrentVersionReader.getCurrentSupportedSpringBootVersion();
         String azureSupportedSpringCloudVersion = azureCurrentVersionReader.getCurrentSupportedSpringCloudVersion();
         String releaseNotesContents;
         String latestSpringBootMatchedSpringCloudVersion;
-        if (!azureSupportedSpringBootVersion.equals(latestSpringBootVersion) || !azureSupportedSpringBootVersion.equals(RCSpringBootVersion)) {
+        boolean isNewGaVersionAvailable = latestSpringBootVersion != null
+            && !azureSupportedSpringBootVersion.equals(latestSpringBootVersion);
+        boolean isNewRcVersionAvailable = RCSpringBootVersion != null
+            && !azureSupportedSpringBootVersion.equals(RCSpringBootVersion);
+        if (isNewGaVersionAvailable || isNewRcVersionAvailable) {
             try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("spring-versions.txt"))) {
                 latestSpringBootMatchedSpringCloudVersion = springCloudCompatibleSpringBootVersionRanges
                         .entrySet()
@@ -62,7 +66,7 @@ public class UpdateSpringDependenciesRunner implements CommandLineRunner {
                         .map(Map.Entry::getKey)
                         .findFirst()
                         .get();
-                if (!azureSupportedSpringBootVersion.equals(latestSpringBootVersion)) {
+                if (isNewGaVersionAvailable) {
                     releaseNotesContents = springBootReleaseNotesReader.getReleaseNotes(latestSpringBootVersion);
                     bufferedWriter.write(latestSpringBootVersion);
                     bufferedWriter.newLine();
