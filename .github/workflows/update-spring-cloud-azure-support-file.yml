@@ -35,8 +35,8 @@ jobs:
               console.log('No open PR found with the target title. Proceeding with pipeline.');
               core.setOutput('has_open_pr', 'false');
             }
-  build:
-    name: Build
+  update:
+    name: Update Support File and Create PR
     needs: check-open-pr
     if: ${{ needs.check-open-pr.outputs.has_open_pr == 'false' }}
     runs-on: ubuntu-latest

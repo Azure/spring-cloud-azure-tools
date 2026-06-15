@@ -10,10 +10,46 @@ on:
     # * is a special character in YAML so you have to quote this string
     - cron:  '0 0 * * *'
   workflow_dispatch:
+env:
+  PR_TITLE_PREFIX: 'External dependencies upgrade - Spring Boot'
 jobs:
-  build:
-    name: Build
+  check:
+    name: Check for Open Spring Boot Upgrade PRs
     runs-on: ubuntu-latest
+    outputs:
+      skip_pipeline: ${{ steps.check_prs.outputs.skip_pipeline }}
+    steps:
+      - name: Check for Open Spring Boot Upgrade PRs
+        id: check_prs
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+          script: |
+            const prTitlePrefix = process.env.PR_TITLE_PREFIX;
+            const { data: pullRequests } = await github.rest.pulls.list({
+              owner: 'Azure',
+              repo: 'azure-sdk-for-java',
+              state: 'open',
+              per_page: 100
+            });
+
+            const openPRs = pullRequests.filter(pr => pr.title.startsWith(prTitlePrefix));
+
+            if (openPRs.length > 0) {
+              console.log(`Found ${openPRs.length} open PR(s) with title starting with "${prTitlePrefix}". Skipping the pipeline.`);
+              for (const pr of openPRs) {
+                console.log(`  - PR #${pr.number}: ${pr.title}`);
+              }
+              core.setOutput('skip_pipeline', 'true');
+            } else {
+              console.log('No open Spring Boot upgrade PR found. Continuing the pipeline.');
+              core.setOutput('skip_pipeline', 'false');
+            }
+  update:
+    name: Update Dependencies and Create PR
+    runs-on: ubuntu-latest
+    needs: check
+    if: ${{ needs.check.outputs.skip_pipeline != 'true' }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -36,7 +72,7 @@ jobs:
             echo "last_spring_boot_version=$(sed -n '3p' spring-versions.txt)" >> $GITHUB_ENV
             echo "last_spring_cloud_version=$(sed -n '4p' spring-versions.txt)" >> $GITHUB_ENV
             echo "pr_descriptions=$(cat pr-descriptions.txt)" >> $GITHUB_ENV
-            echo "PR_TITLE=External dependencies upgrade - Spring Boot $(sed -n '1p' spring-versions.txt) and Spring Cloud $(sed -n '2p' spring-versions.txt)" >> $GITHUB_ENV
+            echo "PR_TITLE=${PR_TITLE_PREFIX} $(sed -n '1p' spring-versions.txt) and Spring Cloud $(sed -n '2p' spring-versions.txt)" >> $GITHUB_ENV
           fi
       - uses: actions/checkout@v3
         if: ${{ env.need_update_version == 'true' }}
@@ -88,7 +124,7 @@ jobs:
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
           script: |
-            const prTitlePrefix = 'External dependencies upgrade - Spring Boot';
+            const prTitlePrefix = process.env.PR_TITLE_PREFIX;
             const { data: pullRequests } = await github.rest.pulls.list({
               owner: 'Azure',
               repo: 'azure-sdk-for-java',
