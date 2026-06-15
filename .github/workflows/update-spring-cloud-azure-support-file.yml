@@ -104,37 +104,6 @@ jobs:
           git add docs/spring/Spring-Cloud-Azure-Timeline.md
           git commit -m "${{ env.COMMIT_MESSAGE }}"
           git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git"
-      - name: Close Old Pull Requests
-        if: ${{ env.NEED_UPDATE_FILE == 'true' }}
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.ACCESS_TOKEN }}
-          script: |
-            const prTitle = process.env.PR_TITLE;
-            const { data: pullRequests } = await github.rest.pulls.list({
-              owner: 'Azure',
-              repo: 'azure-sdk-for-java',
-              state: 'open'
-            });
-
-            const oldPRs = pullRequests.filter(pr => pr.title === prTitle);
-
-            for (const pr of oldPRs) {
-              console.log(`Closing PR #${pr.number} with comment`);
-              await github.rest.issues.createComment({
-                owner: 'Azure',
-                repo: 'azure-sdk-for-java',
-                issue_number: pr.number,
-                body: 'This PR has been superseded by a newer update. Closing automatically.'
-              });
-
-              await github.rest.pulls.update({
-                owner: 'Azure',
-                repo: 'azure-sdk-for-java',
-                pull_number: pr.number,
-                state: 'closed'
-              });
-            }
       - name: Create Pull Request
         id: create_pr
         if: ${{ env.NEED_UPDATE_FILE == 'true' }}
