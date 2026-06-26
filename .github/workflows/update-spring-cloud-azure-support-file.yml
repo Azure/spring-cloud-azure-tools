@@ -90,8 +90,8 @@ jobs:
           SUPPORT_FILE=sdk/spring/pipeline/spring-cloud-azure-supported-spring.json
 
           # Only add a new timeline item when Spring Boot 4.x entries are updated.
-          OLD_4X=$(git show HEAD:${SUPPORT_FILE} | jq -S '[.[] | select(."spring-boot-version" | startswith("4."))]')
-          NEW_4X=$(jq -S '[.[] | select(."spring-boot-version" | startswith("4."))]' "${SUPPORT_FILE}")
+          OLD_4X=$(git show "HEAD:${SUPPORT_FILE}" | jq -Sc '[.[] | select(."spring-boot-version" | startswith("4."))] | sort_by(."spring-boot-version", ."spring-cloud-version", .supportStatus, .current)')
+          NEW_4X=$(jq -Sc '[.[] | select(."spring-boot-version" | startswith("4."))] | sort_by(."spring-boot-version", ."spring-cloud-version", .supportStatus, .current)' "${SUPPORT_FILE}")
 
           if [[ "${OLD_4X}" == "${NEW_4X}" ]]; then
             echo "No Spring Boot 4.x changes detected, skip timeline update."
