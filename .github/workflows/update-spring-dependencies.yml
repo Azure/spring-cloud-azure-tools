@@ -19,11 +19,19 @@ jobs:
     outputs:
       skip_pipeline: ${{ steps.check_prs.outputs.skip_pipeline }}
     steps:
+      - uses: actions/checkout@v4
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: ./.github/actions/github-app-token
+        with:
+          app-id: ${{ secrets.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          repositories: azure-sdk-for-java
       - name: Check for Open Spring Boot Upgrade PRs
         id: check_prs
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.ACCESS_TOKEN }}
+          github-token: ${{ steps.app-token.outputs.token }}
           script: |
             const prTitlePrefix = process.env.PR_TITLE_PREFIX;
             const { data: pullRequests } = await github.rest.pulls.list({
@@ -51,9 +59,14 @@ jobs:
     needs: check
     if: ${{ needs.check.outputs.skip_pipeline != 'true' }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: ./.github/actions/github-app-token
         with:
-          repository: 'Azure/spring-cloud-azure-tools'
+          app-id: ${{ secrets.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          repositories: azure-sdk-for-java
       - name: Generate Version File
         run: |
           mvn compile
@@ -74,14 +87,15 @@ jobs:
             echo "pr_descriptions=$(cat pr-descriptions.txt)" >> $GITHUB_ENV
             echo "PR_TITLE=${PR_TITLE_PREFIX} $(sed -n '1p' spring-versions.txt) and Spring Cloud $(sed -n '2p' spring-versions.txt)" >> $GITHUB_ENV
           fi
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         if: ${{ env.need_update_version == 'true' }}
         with:
           repository: 'Azure/azure-sdk-for-java'
           path: 'azure-sdk-for-java'
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
           fetch-depth: 1
+          persist-credentials: false
       - name: Generate spring_boot_managed_external_dependencies.txt
         if: ${{ env.need_update_version == 'true' }}
         run: |
@@ -117,16 +131,16 @@ jobs:
           git rm ./sdk/spring/scripts/spring_boot_${{ env.last_spring_boot_version }}_managed_external_dependencies.txt
           git add -A
           git commit -m "Upgrade external dependencies to align with Spring Boot ${{ env.spring_boot_version }}"
-          git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git" "HEAD:${{ env.update_branch }}"
+          git push "https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/Azure/azure-sdk-for-java.git" "HEAD:${{ env.update_branch }}"
       - name: Create Pull Request
         id: create_pr
         if: ${{ env.need_update_version == 'true' }}
-        uses: vsoch/pull-request-action@master
+        uses: vsoch/pull-request-action@1.1.1
         env:
-          PULL_REQUEST_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          PULL_REQUEST_TOKEN: ${{ steps.app-token.outputs.token }}
           PULL_REQUEST_REPOSITORY: Azure/azure-sdk-for-java
           PULL_REQUEST_TITLE: "${{ env.PR_TITLE }}"
-          PULL_REQUEST_FROM_BRANCH: "${{ secrets.USER }}:${{ env.update_branch }}"
+          PULL_REQUEST_FROM_BRANCH: "${{ env.update_branch }}"
           PULL_REQUEST_BRANCH: "main"
           PULL_REQUEST_BODY: "Updates external dependencies to align with Spring Boot version [${{ env.spring_boot_version }}](https://repo1.maven.org/maven2/org/springframework/boot/spring-boot-dependencies/${{ env.spring_boot_version }}/spring-boot-dependencies-${{ env.spring_boot_version }}.pom) from [${{ env.last_spring_boot_version }}](https://repo1.maven.org/maven2/org/springframework/boot/spring-boot-dependencies/${{ env.last_spring_boot_version }}/spring-boot-dependencies-${{ env.last_spring_boot_version }}.pom) and Spring Cloud version [${{ env.spring_cloud_version }}](https://repo1.maven.org/maven2/org/springframework/cloud/spring-cloud-dependencies/${{ env.spring_cloud_version }}/spring-cloud-dependencies-${{ env.spring_cloud_version }}.pom) from [${{ env.last_spring_cloud_version }}](https://repo1.maven.org/maven2/org/springframework/cloud/spring-cloud-dependencies/${{ env.last_spring_cloud_version }}/spring-cloud-dependencies-${{ env.last_spring_cloud_version }}.pom).\n${{ env.pr_descriptions }}\n\nThis PR is created by GitHub Actions: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
           PULL_REQUEST_DRAFT: false
@@ -134,7 +148,7 @@ jobs:
         if: ${{ env.need_update_version == 'true' }}
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.ACCESS_TOKEN }}
+          github-token: ${{ steps.app-token.outputs.token }}
           script: |
             const prNumber = '${{ steps.create_pr.outputs.pull_request_number }}';
 
