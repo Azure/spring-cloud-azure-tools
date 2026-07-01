@@ -11,6 +11,10 @@ inputs:
     description: Installation owner
     required: false
     default: Azure
+  repositories:
+    description: Comma or newline separated list of repository names for token scoping
+    required: false
+    default: azure-sdk-for-java
 outputs:
   token:
     description: GitHub App installation token
@@ -25,3 +29,4 @@ runs:
         app-id: ${{ inputs.app-id }}
         private-key: ${{ inputs.private-key }}
         owner: ${{ inputs.owner }}
+        repositories: ${{ inputs.repositories }}

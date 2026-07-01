@@ -15,6 +15,7 @@ jobs:
         with:
           app-id: ${{ secrets.GH_APP_ID }}
           private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          repositories: azure-sdk-for-java
       - name: Generate Version File
         run: |
           mvn compile
@@ -49,6 +50,7 @@ jobs:
           ref: main
           token: ${{ steps.app-token.outputs.token }}
           fetch-depth: 1
+          persist-credentials: false
       - name: Generate spring_boot_managed_external_dependencies.txt
         if: ${{ env.need_update_version == 'true' }}
         run: |
