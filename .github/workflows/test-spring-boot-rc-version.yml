@@ -90,7 +90,7 @@ jobs:
           git push "https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/Azure/azure-sdk-for-java.git" "HEAD:${{ env.update_branch }}"
       - name: Create Pull Request
         if: ${{ env.need_update_version == 'true' }}
-        uses: vsoch/pull-request-action@77b3eea5c721545c56f775e1ed4ff9c9c1386148
+        uses: vsoch/pull-request-action@1.1.1
         env:
           PULL_REQUEST_TOKEN: ${{ steps.app-token.outputs.token }}
           PULL_REQUEST_REPOSITORY: Azure/azure-sdk-for-java
