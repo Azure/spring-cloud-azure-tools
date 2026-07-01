@@ -20,8 +20,6 @@ jobs:
       skip_pipeline: ${{ steps.check_prs.outputs.skip_pipeline }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          repository: 'Azure/spring-cloud-azure-tools'
       - name: Generate GitHub App Token
         id: app-token
         uses: ./.github/actions/github-app-token
@@ -62,8 +60,6 @@ jobs:
     if: ${{ needs.check.outputs.skip_pipeline != 'true' }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          repository: 'Azure/spring-cloud-azure-tools'
       - name: Generate GitHub App Token
         id: app-token
         uses: ./.github/actions/github-app-token
