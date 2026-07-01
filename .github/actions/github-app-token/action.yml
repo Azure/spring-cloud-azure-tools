@@ -26,7 +26,7 @@ runs:
       id: app-token
       uses: actions/create-github-app-token@v3.2.0
       with:
-        app-id: ${{ inputs.app-id }}
-        private-key: ${{ inputs.private-key }}
+        app-id: ${{ inputs['app-id'] }}
+        private-key: ${{ inputs['private-key'] }}
         owner: ${{ inputs.owner }}
         repositories: ${{ inputs.repositories }}
