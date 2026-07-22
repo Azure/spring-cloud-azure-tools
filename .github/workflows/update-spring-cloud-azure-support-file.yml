@@ -126,6 +126,7 @@ jobs:
           git add sdk/spring/pipeline/spring-cloud-azure-supported-spring.json
           git add docs/spring/Spring-Cloud-Azure-Timeline.md
           git commit -m "${{ env.COMMIT_MESSAGE }}"
+          # secrets.USER is the GitHub username of the user who created the Personal Access Token (PAT) stored in secrets.ACCESS_TOKEN.
           git push "https://${{ secrets.USER }}:${{ secrets.ACCESS_TOKEN }}@github.com/${{ secrets.USER }}/azure-sdk-for-java.git"
       - name: Create Pull Request
         id: create_pr
