@@ -22,10 +22,12 @@ import org.springframework.stereotype.Component;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -145,13 +147,51 @@ public class UpdateSpringCloudAzureSupportFileRunner implements CommandLineRunne
         if (supportMetadata != null && supportMetadata.getSupportStatus() == SupportStatus.END_OF_LIFE) {
             return supportMetadata.getSpringCloudVersion();
         }
-        return this.springCloudCompatibleSpringBootVersionRanges
+        String resolvedSpringCloudVersion = this.springCloudCompatibleSpringBootVersionRanges
             .entrySet()
             .stream()
             .filter(entry -> entry.getValue().match(Version.parse(springBootVersion)))
             .map(Map.Entry::getKey)
-            .collect(Collectors.toList())
-            .stream().findFirst().orElse(NONE_SUPPORTED_VERSION);
+            .findFirst()
+            .orElse(NONE_SUPPORTED_VERSION);
+        if (!NONE_SUPPORTED_VERSION.equals(resolvedSpringCloudVersion)) {
+            return resolvedSpringCloudVersion;
+        }
+        // start.spring.io dropped this still-supported Spring Boot generation: keep the last known Spring Cloud
+        // version instead of regressing to NONE - first for the exact Spring Boot version, ...
+        if (isUsableSpringCloudVersion(supportMetadata)) {
+            return supportMetadata.getSpringCloudVersion();
+        }
+        // ... otherwise the highest known version from the same MAJOR.MINOR line (e.g. a brand-new patch).
+        return findSpringCloudVersionFromSameMinorLine(springBootVersion).orElse(NONE_SUPPORTED_VERSION);
+    }
+
+    private static boolean isUsableSpringCloudVersion(SpringCloudAzureSupportMetadata metadata) {
+        return metadata != null
+            && metadata.getSpringCloudVersion() != null
+            && !NONE_SUPPORTED_VERSION.equals(metadata.getSpringCloudVersion());
+    }
+
+    private Optional<String> findSpringCloudVersionFromSameMinorLine(String springBootVersion) {
+        Version targetVersion = Version.safeParse(springBootVersion);
+        if (targetVersion == null || targetVersion.getMajor() == null || targetVersion.getMinor() == null) {
+            return Optional.empty();
+        }
+        return this.azureSupportMetadataMap
+            .values()
+            .stream()
+            .filter(UpdateSpringCloudAzureSupportFileRunner::isUsableSpringCloudVersion)
+            .filter(metadata -> isSameMinorLine(targetVersion, metadata.getSpringBootVersion()))
+            .max(Comparator.comparing(
+                (SpringCloudAzureSupportMetadata metadata) -> Version.parse(metadata.getSpringBootVersion())))
+            .map(SpringCloudAzureSupportMetadata::getSpringCloudVersion);
+    }
+
+    private static boolean isSameMinorLine(Version targetVersion, String springBootVersion) {
+        Version version = springBootVersion == null ? null : Version.safeParse(springBootVersion);
+        return version != null
+            && targetVersion.getMajor().equals(version.getMajor())
+            && targetVersion.getMinor().equals(version.getMinor());
     }
 
     /**

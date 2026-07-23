@@ -51,6 +51,57 @@ class UpdateSpringCloudAzureSupportFileRunnerTest {
     }
 
     @Test
+    void testRetainsLastKnownSpringCloudVersionWhenInitializrDropsGeneration() {
+        // Initializr no longer matches the still-SUPPORTED 3.5.16, so it keeps its recorded Spring Cloud version.
+        UpdateSpringCloudAzureSupportFileRunner runnerUnderTest = createRunner(springCloudRangesFor4x(),
+            List.of(createSupportMetadata("3.5.16", "2025.0.3", SupportStatus.SUPPORTED)));
+
+        Assertions.assertEquals("2025.0.3", runnerUnderTest.findCompatibleSpringCloudVersion("3.5.16"));
+    }
+
+    @Test
+    void testPrefersInitializrMatchOverLastKnownSpringCloudVersion() {
+        // An Initializr match still wins over the recorded value (auto-upgrade preserved, no regression).
+        Map<String, VersionRange> ranges = Collections.singletonMap("2025.0.4",
+            new VersionRange(Version.parse("3.5.0"), true, Version.parse("3.6.0-M1"), false));
+        UpdateSpringCloudAzureSupportFileRunner runnerUnderTest = createRunner(ranges,
+            List.of(createSupportMetadata("3.5.16", "2025.0.3", SupportStatus.SUPPORTED)));
+
+        Assertions.assertEquals("2025.0.4", runnerUnderTest.findCompatibleSpringCloudVersion("3.5.16"));
+    }
+
+    @Test
+    void testFallsBackToHighestSpringCloudVersionFromSameMinorLine() {
+        // A new patch (3.5.17) with no entry and no Initializr match reuses the highest known 3.5.x value.
+        UpdateSpringCloudAzureSupportFileRunner runnerUnderTest = createRunner(springCloudRangesFor4x(),
+            List.of(
+                createSupportMetadata("3.5.16", "2025.0.3", SupportStatus.SUPPORTED),
+                createSupportMetadata("3.5.15", "2025.0.3", SupportStatus.END_OF_LIFE),
+                createSupportMetadata("3.5.14", "2025.0.2", SupportStatus.END_OF_LIFE)));
+
+        Assertions.assertEquals("2025.0.3", runnerUnderTest.findCompatibleSpringCloudVersion("3.5.17"));
+    }
+
+    @Test
+    void testReturnsNoneWhenNoSameMinorLineIsKnown() {
+        // No Initializr match and no recorded 3.5.x entry to fall back to, so the result stays NONE.
+        UpdateSpringCloudAzureSupportFileRunner runnerUnderTest = createRunner(springCloudRangesFor4x(),
+            List.of(createSupportMetadata("4.0.7", "2025.1.2", SupportStatus.SUPPORTED)));
+
+        Assertions.assertEquals(UpdateSpringCloudAzureSupportFileRunner.NONE_SUPPORTED_VERSION,
+            runnerUnderTest.findCompatibleSpringCloudVersion("3.5.99"));
+    }
+
+    @Test
+    void testEndOfLifeVersionKeepsRecordedSpringCloudVersion() {
+        // END_OF_LIFE versions always keep their recorded Spring Cloud version, regardless of Initializr.
+        UpdateSpringCloudAzureSupportFileRunner runnerUnderTest = createRunner(springCloudRangesFor4x(),
+            List.of(createSupportMetadata("3.4.0", "2023.0.5", SupportStatus.END_OF_LIFE)));
+
+        Assertions.assertEquals("2023.0.5", runnerUnderTest.findCompatibleSpringCloudVersion("3.4.0"));
+    }
+
+    @Test
     void testSetNewStatusWithSupport() {
         SpringCloudAzureSupportMetadata metadata = new SpringCloudAzureSupportMetadata();
         metadata.setReleaseStatus(ReleaseStatus.GENERAL_AVAILABILITY);
@@ -115,5 +166,30 @@ class UpdateSpringCloudAzureSupportFileRunnerTest {
 
         metadata.setSpringBootVersion("3.5.0-M1");
         Assertions.assertTrue(runnerWithRc.isSnapshotOrMilestoneOrRC(metadata));
+    }
+
+    private UpdateSpringCloudAzureSupportFileRunner createRunner(Map<String, VersionRange> springCloudRanges,
+                                                                 List<SpringCloudAzureSupportMetadata> supportMetadataList) {
+        when(this.springInitializrMetadataReader.getCompatibleSpringBootVersions("spring-cloud"))
+            .thenReturn(springCloudRanges);
+        when(this.azureSupportMetadataReader.getAzureSupportMetadata()).thenReturn(supportMetadataList);
+        return new UpdateSpringCloudAzureSupportFileRunner(null, springInitializrMetadataReader,
+            azureSupportMetadataReader, null, false);
+    }
+
+    private static SpringCloudAzureSupportMetadata createSupportMetadata(String springBootVersion,
+                                                                         String springCloudVersion,
+                                                                         SupportStatus supportStatus) {
+        SpringCloudAzureSupportMetadata metadata = new SpringCloudAzureSupportMetadata();
+        metadata.setSpringBootVersion(springBootVersion);
+        metadata.setSpringCloudVersion(springCloudVersion);
+        metadata.setSupportStatus(supportStatus);
+        return metadata;
+    }
+
+    private static Map<String, VersionRange> springCloudRangesFor4x() {
+        // Mirrors the current start.spring.io payload, which only exposes the Spring Boot 4.x compatible train.
+        return Collections.singletonMap("2025.1.2",
+            new VersionRange(Version.parse("4.0.0"), true, Version.parse("4.2.0-M1"), false));
     }
 }
