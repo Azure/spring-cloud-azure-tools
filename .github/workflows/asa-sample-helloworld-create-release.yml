@@ -23,12 +23,12 @@ jobs:
       contents: write
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3.7.0
       with: 
         repository: 'spring-guides/gs-spring-boot-for-azure'
         ref: ${{ github.event.inputs.commit-sha }}
     - name: Setup Java JDK
-      uses: actions/setup-java@v3.12.0
+      uses: actions/setup-java@cd89f46ac9d01407894225f350157564c9c7cee2 # v3.12.0
       with:  
         java-version: '17'
         distribution: 'temurin'
@@ -40,7 +40,7 @@ jobs:
       run: |
         mv *.jar ${{ env.APP_NAME }}-${{ github.event.inputs.version }}.jar
       working-directory: ./complete/target
-    - uses: ncipollo/release-action@v1
+    - uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
       with:
         artifacts: "./complete/target/*.jar"
         tag: ${{ github.event.inputs.version }}
