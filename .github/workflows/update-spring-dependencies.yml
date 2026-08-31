@@ -21,7 +21,7 @@ jobs:
     steps:
       - name: Check for Open Spring Boot Upgrade PRs
         id: check_prs
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
           script: |
@@ -51,7 +51,7 @@ jobs:
     needs: check
     if: ${{ needs.check.outputs.skip_pipeline != 'true' }}
     steps:
-      - uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3.7.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: 'Azure/spring-cloud-azure-tools'
       - name: Generate Version File
@@ -74,7 +74,7 @@ jobs:
             echo "pr_descriptions=$(cat pr-descriptions.txt)" >> $GITHUB_ENV
             echo "PR_TITLE=${PR_TITLE_PREFIX} $(sed -n '1p' spring-versions.txt) and Spring Cloud $(sed -n '2p' spring-versions.txt)" >> $GITHUB_ENV
           fi
-      - uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3.7.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: ${{ env.need_update_version == 'true' }}
         with:
           repository: 'Azure/azure-sdk-for-java'
@@ -132,7 +132,7 @@ jobs:
           PULL_REQUEST_DRAFT: false
       - name: Comment on Pull Requests
         if: ${{ env.need_update_version == 'true' }}
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
           script: |
