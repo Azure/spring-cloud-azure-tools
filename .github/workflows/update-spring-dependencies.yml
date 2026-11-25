@@ -121,7 +121,7 @@ jobs:
       - name: Create Pull Request
         id: create_pr
         if: ${{ env.need_update_version == 'true' }}
-        uses: vsoch/pull-request-action@master
+        uses: vsoch/pull-request-action@882391869b75196e039a732df05085312c456995 # 1.1.1
         env:
           PULL_REQUEST_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           PULL_REQUEST_REPOSITORY: Azure/azure-sdk-for-java
